@@ -56,7 +56,6 @@ default_paramaters = {
     "organic_carbon_content_per_cell": [Decimal('140'), "fg/cell -  Amount of organic carbon per cell.", [0, 500]],
     "inorganic_carbon_content_per_cell": [Decimal('0'), "fg/cell - Amount of inorganic carbon per cell.", [0, 500]],
     "mu_max": [Decimal('0.06'), "day^-1 - Max growth rate.", [0, 10 ** 5]],
-    "growth_penalty": [Decimal('0.5'), "% - Penalty to reduce u_max by. 0 is normal growth.", [0, 1]],
     "base_maintenance_per_cell": [Decimal('0.0006') / (Decimal('0.00069') * Decimal('0.4')),
                                   "fg carbon/fg dry mass x day - Constant maintenance energy coefficient.", [0, 400]],
     "m_prime": [Decimal('0'),
@@ -97,12 +96,11 @@ def model(du, u, paramaters, t):
     organic_carbon_content_per_cell = paramaters[4]
     inorganic_carbon_content_per_cell = paramaters[5]
     mu_max = paramaters[6]
-    growth_penalty = paramaters[7]
-    base_maintenance_per_cell = paramaters[8]
-    m_prime = paramaters[9]
-    maximum_growth_yield = paramaters[10]
-    inorganic_carbon_fixing_factor = paramaters[11]
-    carrying_capacity = paramaters[12]
+    base_maintenance_per_cell = paramaters[7]
+    m_prime = paramaters[8]
+    maximum_growth_yield = paramaters[9]
+    inorganic_carbon_fixing_factor = paramaters[10]
+    carrying_capacity = paramaters[11]
 
     # Load state conditions
     organic_carbon_content = u[0]
@@ -112,8 +110,7 @@ def model(du, u, paramaters, t):
 
     ## CELL COUNT
     # Growth
-    penalized_mu_max = mu_max * (1 - growth_penalty)
-    growth = penalized_mu_max * (organic_carbon_content / (ks + organic_carbon_content)) * cell_count * (
+    growth = mu_max * (organic_carbon_content / (ks + organic_carbon_content)) * cell_count * (
             1 - cell_count / carrying_capacity)
 
     # Specific growth rate
