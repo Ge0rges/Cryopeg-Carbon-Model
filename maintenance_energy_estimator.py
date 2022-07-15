@@ -10,6 +10,12 @@ end_carbon = 50000  # fg C/ml - End carbon concentration
 cell_carbon_content = 400  # fg C - Carbon content a cell takes up/releases upon birth/death
 
 
+def estimate_no_growth():
+    m = (end_carbon - start_carbon)/(end_cell*timespan)
+
+    print("For growth rate 0, maintenance energy value is: " + str(m) + " fg C/(cell * day)")
+
+
 def estimate_exponential_growth():
     sp.init_printing()
 
@@ -30,9 +36,10 @@ def estimate_exponential_growth():
     # m = (g(Nf-N0) + Cf - C0)/∫N(t)dt
     m = (cell_carbon_content * (end_cell - start_cell) + end_carbon - start_carbon)/integrate(N, (t, 0, timespan))
 
-    print("Growth rate is:" + str(mu))
-    print("Maintenance energy value is:" + str(m))
+    print("For strictly exponential growth, growth rate is: " + str(mu) + "/days")
+    print("Maintenance energy value is: " + str(m) + " fg C/(cell * day)")
 
 
 if __name__ == "__main__":
+    estimate_no_growth()
     estimate_exponential_growth()

@@ -61,7 +61,6 @@ default_paramaters = {
     "m_prime": [Decimal('0'),
                 "fg glucose/fg dry mass x day - Growth rate dependent maintenance coefficient, known as m_prime in pirt (1982).",
                 [0, 1000]],
-    "maximum_growth_yield": [75 / Decimal('72.07'), "fg dry mass/fg carbon x day - Maximum growth yield.", [0, 500]],
 
     # Inorganic carbon fixing paramaters
     "inorganic_carbon_fixing_factor": [Decimal('0'), "%/day - The percentage of inorganic carbon present fixed.",
@@ -97,10 +96,9 @@ def model(du, u, paramaters, t):
     inorganic_carbon_content_per_cell = paramaters[5]
     mu_max = paramaters[6]
     base_maintenance_per_cell = paramaters[7]
-    m_prime = paramaters[8]
-    maximum_growth_yield = paramaters[9]
-    inorganic_carbon_fixing_factor = paramaters[10]
-    carrying_capacity = paramaters[11]
+    # m_prime = paramaters[8]
+    inorganic_carbon_fixing_factor = paramaters[8]
+    carrying_capacity = paramaters[9]
 
     # Load state conditions
     organic_carbon_content = u[0]
@@ -118,9 +116,10 @@ def model(du, u, paramaters, t):
     # specific_growth_rate = 0
     # if next_cell_count > 0 and cell_count > 0:
     #     specific_growth_rate = max((np.log(next_cell_count) - np.log(cell_count)), 0)
+    # required_organic_carbon_per_cell = base_maintenance_per_cell  + m_prime * (1 - specific_growth_rate/mu_max)
 
     # Organic carbon requirement
-    required_organic_carbon_per_cell = base_maintenance_per_cell  # + m_prime * (1 - specific_growth_rate/mu_max)
+    required_organic_carbon_per_cell = base_maintenance_per_cell
     required_organic_carbon = required_organic_carbon_per_cell * cell_count
 
     # Starvation
@@ -149,8 +148,6 @@ def model(du, u, paramaters, t):
             deaths - growth) - carbon_consumption + fixed_carbon
 
 
-
-
 def solve_using_julia(paramaters, ivp):
     y0 = np.asarray([float(ivp["initial_carbon_content"]), float(ivp["initial_inorganic_carbon_content"]),
                      float(ivp["initial_cell_count"])])
@@ -160,44 +157,22 @@ def solve_using_julia(paramaters, ivp):
     return de.solve(prob, reltol=1e-9, abstol=1e-9)
 
 
-def plot(S, I, N, t):
-    # Organic carbon plot
-    plt.figure()
-    plt.subplot(2, 2, 1)
-    plt.plot(t / 365, S, label='Organic carbon', color="blue")
-    plt.xlabel('Years from start')
-    plt.ylabel('femtograms/ml')
-    plt.title('Organic carbon over time')
-    plt.legend(loc=0)
-
-    # Inorganic carbon plot
-    plt.subplot(2, 2, 2)
-    plt.plot(t / 365, I, label='Inorganic carbon', color="brown")
-    plt.xlabel('Years from start')
-    plt.ylabel('femtograms/ml')
-    plt.title('Inorganic carbon over time')
-    plt.legend(loc=0)
-
-    # Cell count plot
-    plt.subplot(2, 2, 3)
-    plt.plot(t / 365, N, label='Cells', color="green")
-    plt.xlabel('Years from start')
-    plt.ylabel('cells/ml')
-    plt.title('Cell count over time')
-    plt.legend(loc=0)
-
-    plt.show()
-
-
-if __name__ == "__main__":
+def run_model(paramaters, ivp):
     # Strip help string and bounds from dicts
     paramaters = {key: val[0] for key, val in zip(default_paramaters.keys(), default_paramaters.values())}
     ivp = {key: val[0] for key, val in zip(default_initial_value.keys(), default_initial_value.values())}
 
     # Julia solver
     soln = solve_using_julia(paramaters, ivp)
-    S, I, N, t = [x[0] for x in soln.u],  [x[1] for x in soln.u], [x[2] for x in soln.u], soln.t
+    S, I, N, t = [x[0] for x in soln.u], [x[1] for x in soln.u], [x[2] for x in soln.u], soln.t
 
-    plot(S, I, N, t)
+    return S, I, N, t
 
-    # # Sensitivity analysis
+
+def sensitivity_analysis():
+    return
+
+
+if __name__ == "__main__":
+    run_model(default_paramaters, default_initial_value)
+    sensitivity_analysis()
