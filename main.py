@@ -11,7 +11,7 @@ Call run_all_analysis() with custom paramaters to create your own scenario.
 
 from maintenance_energy_estimator import *
 from brine_expansion_calculator import calculate_brine_expansion
-from julia_model import run_model, sensitivity_analysis
+from model import run_model, sensitivity_analysis
 from plots import plot_model
 
 def cb1_general_scenario():
