@@ -149,18 +149,18 @@ def calculate_brine_expansion(carbon_density_in_permafrost, carbon_required_per_
 
 # Example code for all analysis on default values
 if __name__ == "__main__":
-    # # Estimate bounds for maintenance energy
-    # me_upper = estimate_me_no_growth(default_ivp[1], default_ivp[1]/10, 10 ** 8, default_ivp[3])
-    # growth_rate, me_lower = estimate_me_exp_growth(default_ivp[1], 100000, 10**5, 10**8, 400, default_ivp[3])
-    # print("Bounds for maintenance energy are, low: " + str(me_lower) + " and high: " + str(me_upper) + " fg C/cell day")
-    #
-    # # Run the model trhough PyJulia
-    # S, I, N, t = run_model(default_paramaters, default_ivp)
-    # plot_model(S, I, N, t)
-    #
-    # # Calculate brine expansion
-    # _, _, ratio_dimensions, _, _ = calculate_brine_expansion(default_ivp[0], (S[-1] - S[0])/(default_ivp[3] * 365.25))
-    # print("Brine needs to expand by " + str(ratio_dimensions) + "% along each axis per year.")
+    # Estimate bounds for maintenance energy
+    me_upper = estimate_me_no_growth(default_ivp[1], default_ivp[1]/10, 10 ** 8, default_ivp[3])
+    growth_rate, me_lower = estimate_me_exp_growth(default_ivp[1], 100000, 10**5, 10**8, 400, default_ivp[3])
+    print("Bounds for maintenance energy are, low: " + str(me_lower) + " and high: " + str(me_upper) + " fg C/cell day")
+
+    # Run the model trhough PyJulia
+    S, I, N, t = run_model(default_paramaters, default_ivp)
+    plot_model(S, I, N, t)
+
+    # Calculate brine expansion
+    _, _, ratio_dimensions, _, _ = calculate_brine_expansion(default_ivp[0], (S[-1] - S[0])/(default_ivp[3] * 365.25))
+    print("Brine needs to expand by " + str(ratio_dimensions) + "% along each axis per year.")
 
     # Run the sensitivity analysis
     ST, S1 = run_sensitivity_analysis(default_paramaters, default_paramater_bounds, default_ivp)
