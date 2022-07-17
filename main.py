@@ -9,10 +9,8 @@ The main function of this file executes all scenarios and the sensitivity analyt
 Call run_all_analysis() with custom paramaters to create your own scenario.
 '''
 
-from maintenance_energy_estimator import *
-from brine_expansion_calculator import calculate_brine_expansion
-from model import run_model, sensitivity_analysis
-from plots import plot_model
+from analysis import *
+from plots import *
 
 def cb1_general_scenario():
     beo_poc = 0

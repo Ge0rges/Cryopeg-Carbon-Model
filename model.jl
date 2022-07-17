@@ -22,8 +22,9 @@ function run_model(p, u0)
 end
 
 
-function run_sensitivity_analysis(p_bounds, u0)
+function run_sensitivity_analysis(p, p_bounds, u0)
     u0 = convert(Array{Float64}, u0)
+    p_bounds = [p_bounds[i, :] for i in 1:size(p_bounds, 1)]
 
     # Check len of p and u0 to be 10 and 3
     @assert size(p)[1] == 11 "Wrong paramaters passed"
@@ -36,8 +37,8 @@ function run_sensitivity_analysis(p_bounds, u0)
     # Define a function that remakes the problem and gets its result
     f1 = function (p)
       prob1 = remake(prob;p=p)
-      sol = solve(prob1, Rosenbrock23(); saveat=collect(range(0, stop=duration, length=200)), maxiters=Int(1e6))
-      [sol[1,:]]
+      sol = solve(prob1, Rosenbrock23(); saveat=collect(range(0, stop=last(u0), length=200)), maxiters=Int(1e6))
+      [last(sol[1,:])]
     end
 
     # Run GSA
@@ -60,7 +61,7 @@ function model(du,u,p,t)
     mu_max = p[9]
     base_maintenance_per_cell = p[10]
     m_prime = p[11]
-    @assert m_prime == "empty" "m_prime not implemented"
+    @assert m_prime == 0 "m_prime not implemented"
 
     # Load state conditions
     organic_carbon_content = u[1]

@@ -28,3 +28,7 @@ def plot_model(S, I, N, t):
     plt.legend(loc=0)
 
     plt.show()
+
+
+def plot_sensitivity(ST, S1, p_names):
+    return
