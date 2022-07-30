@@ -31,28 +31,31 @@ Main.include("model.jl")
 
 
 ## MODEL PARAMATERS
-default_paramaters = [10 ** 9, 0, 0, 0.001, 0, 882000000, 140, 0, 0.06, 0.0006/(0.00069 * 0.4), 0]
-default_paramater_names = ["carrying_capacity", "organic_carbon_input", "inorganic_carbon_input",
-                           "Death %", "IC F%", "Ks", "OC/Cell", "IC/Cell", "mu_max", "ME", "m_prime"]
-default_paramater_bounds = [None, None, None, None, [0, 1], [0.001, 10**10], [0, 500], [0, 500], [0.000000001, 0.1], [0, 400], None]
+default_paramaters = [10 ** 9, 0, 0, 0.001, 0, 8.82*10**5, 140, 0, 0.06, 0.0006/(0.00069 * 0.4), 0, 0]
+default_paramater_names = ["Carrying capacity", "Organic carbon input", "Inorganic carbon input",
+                           "Death rate", "Inorganic carbon fixation rate", "Ks", "Organic carbon/cell",
+                           "Inorganic carbon/Cell", "Growth rate", "Maintenance energy",
+                           "Punctual organic carbon added", "m'"]
+default_paramater_bounds = [None, None, None, None, None, [0.001, 10**10], [0, 500], None, [0, 10], [0, 500], None, None]
 assert len(default_paramaters) == len(default_paramater_names) == len(default_paramater_bounds)
 
 # carrying_capacity inncells/ml - Maximum cell density.
 # organic_carbon_input in fg/(ml x day) - Organic arbon input per day.
 # inorganic_carbon_input in "fg/(ml x day) - Inorganic carbon input per day.
 # natural_death_fraction in %/day - Fraction of cells present that will die at any time t.
-# inorganic_carbon_fixing_factor in %/day - The percentage of inorganic carbon present fixed
+# inorganic_carbon_fixing_factor in %/day - The percentage of inorganic carbon present fixed.
 # ks in fg C - The organic carbon concentration at which u = 1/2 u0.
 # organic_carbon_content_per_cell in fg/cell -  Amount of organic carbon per cell.
 # inorganic_carbon_content_per_cell in fg/cell - Amount of inorganic carbon per cell.
 # mu_max in day^-1 - Max growth rate.
-# base_maintenance_per_cell in fg carbon/fg dry mass x day - Constant maintenance energy coefficient
-# m_prime in fg glucose/fg dry mass x day - Growth rate dependent maintenance coefficient, m_prime in pirt (1982)
+# base_maintenance_per_cell in fg carbon/fg dry mass x day - Constant maintenance energy coefficient.
+# punctual_organic_carbon_addition in (fg carbon, time in day) - Adds fg of carbon at time in day in model simulation.
+# m_prime in fg glucose/fg dry mass x day - Growth rate dependent maintenance coefficient, m_prime in pirt (1982).
 
 default_ivp = [1286820000000, 0, 100000, 11000 * 365.25]
-default_ivp_names = ["initial_carbon_content", "initial_inorganic_carbon_content", "initial_cell_count", "duration"]
+# default_ivp_names = ["Initial organic carbon content", "Initial inorganic carbon content", "Start cell count", "timespan"]
 
-# initial_carbon_content in fg/ml - Initial amount of organic carbon in the system per ml
+# initial_carbon_content in fg/ml - Initial amount of organic carbon in the system per ml.
 # initial_inorganic_carbon_content in fg/ml - Initial amount of inorganic carbon in the system per ml.
 # initial_cell_count in cells/ml - Initial number of cells in the system per ml.
 # duration in days - Duration of the system.
@@ -65,7 +68,7 @@ def estimate_me_no_growth(start_carbon, end_carbon, end_cell, timespan):
     # start_carbon in fg C/ml - Start carbon concentration
     # end_carbon in fg C/ml - End carbon concentration
 
-    m = (end_carbon - start_carbon) / (end_cell * timespan)
+    m = (start_carbon - end_carbon) / (end_cell * timespan)
     return m
 
 
@@ -87,19 +90,19 @@ def estimate_me_exp_growth(start_carbon, end_carbon, start_cell, end_cell, cell_
 
     N = N0 * exp(mu * t)
 
-    # dC/dt = -g*dN/dt - Nm   where: g is cell_carbon_content,
-    # m is maintenance energy, C is carbon concentration, N is cell concentration
+    # dS/dt = -g*dN/dt - Nm   where: g is cell_carbon_content,
+    # m is maintenance energy, S is carbon concentration, N is cell concentration
     # Integrate from 0 to timespan.
-    # Cf - C0 = -g(Nf-N0) - m∫N(t)dt
-    # m = (g(Nf-N0) + Cf - C0)/∫N(t)dt
-    m = (cell_carbon_content * (end_cell - start_cell) + end_carbon - start_carbon) / integrate(N, (t, 0, timespan))
+    # Sf - S0 = -g(Nf-N0) - m∫N(t)dt
+    # m = (S0- Sf - g(Nf-N0))/∫N(t)dt
+    m = (start_carbon - end_carbon - cell_carbon_content * (end_cell - start_cell)) / integrate(N, (t, 0, timespan))
 
-    return mu, m
+    return mu, float(m)
 
 
 def run_model(p, ivp):
     # Run the model trhough PyJulia
-    S, I, N, t = Main.run_model(default_paramaters, default_ivp)
+    S, I, N, t = Main.run_model(p, ivp)
     return S, I, N, t
 
 
@@ -154,14 +157,14 @@ if __name__ == "__main__":
     growth_rate, me_lower = estimate_me_exp_growth(default_ivp[1], 100000, 10**5, 10**8, 400, default_ivp[3])
     print("Bounds for maintenance energy are, low: " + str(me_lower) + " and high: " + str(me_upper) + " fg C/cell day")
 
-    # Run the model trhough PyJulia
-    S, I, N, t = run_model(default_paramaters, default_ivp)
-    plot_model(S, I, N, t)
-
-    # Calculate brine expansion
-    _, _, ratio_dimensions, _, _ = calculate_brine_expansion(default_ivp[0], (S[-1] - S[0])/(default_ivp[3] * 365.25))
-    print("Brine needs to expand by " + str(ratio_dimensions) + "% along each axis per year.")
-
-    # Run the sensitivity analysis
-    ST, S1 = run_sensitivity_analysis(default_paramaters, default_paramater_bounds, default_ivp)
-    plot_sensitivity(ST, S1, default_paramater_names)
+    # # Run the model trhough PyJulia
+    # S, I, N, t = run_model(default_paramaters, default_ivp)
+    # plot_model(S, I, N, t)
+    #
+    # # Calculate brine expansion
+    # _, _, ratio_dimensions, _, _ = calculate_brine_expansion(default_ivp[0], (S[-1] - S[0])/(default_ivp[3] * 365.25))
+    # print("Brine needs to expand by " + str(ratio_dimensions) + "% along each axis per year.")
+    #
+    # # Run the sensitivity analysis
+    # ST, S1 = run_sensitivity_analysis(default_paramaters, default_paramater_bounds, default_ivp)
+    # plot_sensitivity(ST, S1, default_paramater_names)
