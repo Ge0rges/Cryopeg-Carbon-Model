@@ -15,7 +15,12 @@ from utils import *
 import numpy as np
 
 
-def cb1_common_scenario(do_sensitivity_analysis=False, use_me_growth_rate=False, use_me_lower_bound=True):
+def cb1_intrasediment_scenario(do_sensitivity_analysis=False, use_me_growth_rate=False, use_me_lower_bound=True):
+    """
+    CB1 is an intra-sediment brine for which specific carbon values of its immediate surroundings are unavailable.
+    However, it shares many characteristics with the other intra-sediment brines studied. Therefore, using its data,
+    paired with regional organic carbon values, we construct a common intra-sediment brine scenario.
+    """
     dry_sediment_density = 2.625 * 10**6  # ug/ml average density density of kaolinite and sand
     expansion_factor = 0.0905  # Assumed expansion factor of porewater from liquid to solid. (French & Shur 2010)
     beo_volumetric_ice_content = 0.731  # L solid porewater/L permafrost from Go Iwahana (unpublished, but see Meyer et al. 2010)
@@ -58,6 +63,12 @@ def cb1_common_scenario(do_sensitivity_analysis=False, use_me_growth_rate=False,
 
 
 def cb4_scenario(do_sensitivity_analysis=False, use_me_growth_rate=False, use_me_lower_bound=True):
+    """
+    CB4 is an intra-sediment brine for which carbon values of brine and its immediate surrounding are available. This
+    is therefore a specific case of the more general "intra-sediment" brine scenario. Its biology is also somewhat
+    unique from the other cryopeg brines, e.g. Psychrobacter is the dominant genus in this brine rather than
+    Marinobacter like many others.
+    """
     dry_sediment_density = 2.625 * 10**6  # ug/ml average density density of kaolinite and sand
     expansion_factor = 0.0905  # Assumed expansion factor of porewater from liquid to solid. (French & Shur 2010)
     cb4_volumetric_ice_content = 0.527  # L solid porewater/L permafrost from Go Iwahana (unpublished, but see Meyer et al. 2010)
@@ -226,7 +237,7 @@ def log_results(results, savefig=True):
         print(label + " end organic carbon is: {}".format(np.format_float_scientific(S[-1], precision=2)))
         print(label + " end cell density is: {}".format(np.format_float_scientific(N[-1], precision=2)))
 
-        if "- Calculated Growth Rate" not in label:  # Same results, don't log twice
+        if "minimum growth rate" not in label.lower():  # Same results, don't log twice
             print(label + " Maintenance energy (low, high, low growth rate, doubling_time) in fg C/cell day and /day: ({}, {}. {}, {})"
                   .format(np.format_float_scientific(me_lower, precision=4),
                           np.format_float_scientific(me_upper, precision=4),
@@ -236,12 +247,12 @@ def log_results(results, savefig=True):
                   )
         # print(label + " Brine expansion ratio for linear dimensions is: {.2f} % along each axis per year.".format(ratio_dimensions))
 
-        # Individual plots
-        model_fig = plot_model(S, I, N, t, label)
-        # model_fig.show()
-
-        if savefig:
-            model_fig.savefig("Plots/" + label + "_model.pdf", format="pdf", dpi=500, bbox_inches='tight')
+        # # Individual plots
+        # model_fig = plot_model(S, I, N, t, label)
+        # # model_fig.show()
+        #
+        # if savefig:
+        #     model_fig.savefig("Plots/" + label + "_model.pdf", format="pdf", dpi=500, bbox_inches='tight')
 
         # Check if sensitivity analysis was done
         if ST is not None:
@@ -252,8 +263,9 @@ def log_results(results, savefig=True):
                 sa_fig.savefig("Plots/" + label + "_sa.pdf", format="pdf", dpi=500, bbox_inches='tight')
 
     # Make collective plot
-    colors = ["darkgreen", "red", "violet", "pink", "peru", "black"]
-    scenarios_fig = plot_multiple_scenarios(S_array, I_array, N_array, t_array, labels, "Model outputs of all considered scenarios", colors)
+    colors = ["blue", "orange", "red"]
+    line_styles = ["solid", "dashed", "dotted"]
+    scenarios_fig = plot_multiple_scenarios(S_array, I_array, N_array, t_array, labels, "Model outputs of all considered scenarios", colors, line_styles)
     # scenarios_fig.show()
 
     if savefig:
@@ -262,9 +274,10 @@ def log_results(results, savefig=True):
 
 if __name__ == "__main__":
     # Generates all figures and data points presented.
+    # noinspection PyListCreation
     all_results = []
 
-    all_results.append((cb1_common_scenario(do_sensitivity_analysis=True, use_me_growth_rate=False, use_me_lower_bound=True), "Intra-sediment"))
+    all_results.append((cb1_intrasediment_scenario(do_sensitivity_analysis=True, use_me_growth_rate=False, use_me_lower_bound=True), "Intra-sediment"))
     all_results.append((cb4_scenario(do_sensitivity_analysis=False, use_me_growth_rate=False, use_me_lower_bound=True), "CB4"))
     all_results.append((cbiw_scenario(do_sensitivity_analysis=False, use_me_growth_rate=False, use_me_lower_bound=True), "Intra-ice"))
 
