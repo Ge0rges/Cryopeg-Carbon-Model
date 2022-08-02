@@ -12,9 +12,10 @@ Call run_all_analysis() with custom paramaters to create your own scenario.
 from analysis import *
 from plots import *
 from utils import *
+import numpy as np
 
 
-def cb1_general_scenario(do_sensitivity_analysis=False, use_me_growth_rate=False):
+def cb1_common_scenario(do_sensitivity_analysis=False, use_me_growth_rate=False, use_me_lower_bound=True):
     dry_sediment_density = 2.625 * 10**6  # ug/ml average density density of kaolinite and sand
     expansion_factor = 0.0905  # Assumed expansion factor of porewater from liquid to solid. (French & Shur 2010)
     beo_volumetric_ice_content = 0.731  # L solid porewater/L permafrost from Go Iwahana (unpublished, but see Meyer et al. 2010)
@@ -40,8 +41,11 @@ def cb1_general_scenario(do_sensitivity_analysis=False, use_me_growth_rate=False
     start_carbon = beo_poc + beo_doc
     end_carbon = cb1_18_poc + cb1_18_doc
 
+    print("CB1 start carbon in micromolar: " + str(convert_fgC_per_ml_to_micromolar_carbon(start_carbon)))
+    print("CB1 end carbon in micromolar: " + str(convert_fgC_per_ml_to_micromolar_carbon(end_carbon)))
+
     start_cell = 10**5  # Average cell/ml order of magnitue for sea-ice (Cooper et al. 2019)
-    observed_end_cell = 10**8  # Average cell/ml order of magnitude (Cooper et al. 2019)
+    observed_end_cell = 5.7 * 10**6  # Average cell/ml order of magnitude (Cooper et al. 2019)
     timespan = 40000  # Age in years based on carbon dating (Iwanaha et al. 2021)
     growth_rate = 0.06  # Marinobacter aerobic growth rate in-situ based on lab experiments (unpublished), 50% anaerobic penalty
     organic_carbon_per_cell = 15.7  # Litterature based value (Nguyen & Maranger 2011)
@@ -50,10 +54,10 @@ def cb1_general_scenario(do_sensitivity_analysis=False, use_me_growth_rate=False
 
     return run_analysis(start_carbon, end_carbon, start_cell, observed_end_cell, timespan, growth_rate,
                         organic_carbon_per_cell, inorganic_carbon_per_cell, inorganic_carbon_fixation_factor,
-                        0, do_sensitivity_analysis, use_me_growth_rate)
+                        0, do_sensitivity_analysis, use_me_growth_rate, use_me_lower_bound)
 
 
-def cb4_scenario(do_sensitivity_analysis=False, use_me_growth_rate=False):
+def cb4_scenario(do_sensitivity_analysis=False, use_me_growth_rate=False, use_me_lower_bound=True):
     dry_sediment_density = 2.625 * 10**6  # ug/ml average density density of kaolinite and sand
     expansion_factor = 0.0905  # Assumed expansion factor of porewater from liquid to solid. (French & Shur 2010)
     cb4_volumetric_ice_content = 0.527  # L solid porewater/L permafrost from Go Iwahana (unpublished, but see Meyer et al. 2010)
@@ -79,6 +83,9 @@ def cb4_scenario(do_sensitivity_analysis=False, use_me_growth_rate=False):
     start_carbon = cb4_poc + cb4_doc
     end_carbon = cb4_brine_poc + cb4_brine_doc
 
+    print("CB4 start carbon in micromolar: " + str(convert_fgC_per_ml_to_micromolar_carbon(start_carbon)))
+    print("CB4 end carbon in micromolar: " + str(convert_fgC_per_ml_to_micromolar_carbon(end_carbon)))
+
     start_cell = 10**5  # Average cell/ml order of magnitue for sea-ice (Cooper et al. 2019)
     observed_end_cell = 1.14 * 10**7  # cell/ml for CB4_18 (Cooper et al. 2019)
     timespan = 40000  # Age in years based on carbon dating (Iwanaha et al. 2021)
@@ -89,10 +96,10 @@ def cb4_scenario(do_sensitivity_analysis=False, use_me_growth_rate=False):
 
     return run_analysis(start_carbon, end_carbon, start_cell, observed_end_cell, timespan, growth_rate,
                         organic_carbon_per_cell, inorganic_carbon_per_cell, inorganic_carbon_fixation_factor,
-                        0, do_sensitivity_analysis, use_me_growth_rate)
+                        0, do_sensitivity_analysis, use_me_growth_rate, use_me_lower_bound)
 
 
-def cbiw_scenario(do_sensitivity_analysis=False, use_me_growth_rate=False):
+def cbiw_scenario(do_sensitivity_analysis=False, use_me_growth_rate=False, use_me_lower_bound=True):
     """
     CBIW is a intra-ice cryopeg brine. It is thought to have migrated from sediment to massive ice at around 11000 years
     ago. Therefore, this scenario is unique in including an injection of carbon at 11 000 years. We use the lower bound
@@ -101,13 +108,13 @@ def cbiw_scenario(do_sensitivity_analysis=False, use_me_growth_rate=False):
     to quantify precisely how much carbon was added into the brine during its migration.
     """
     dry_sediment_density = 2.625 * 10**6  # ug/ml average density density of kaolinite and sand
-    expansion_factor_permafrost = 0.0905  # Assumed expansion factor of porewater from liquid to solid. (French & Shur 2010)
+    expansion_factor_porewater = 0.0905  # Assumed expansion factor of porewater from liquid to solid. (French & Shur 2010)
     beo_volumetric_ice_content = 0.731  # L solid porewater/L permafrost from Go Iwahana (unpublished, but see Meyer et al. 2010)
     expansion_factor_ice = 0.08042  # % Expansion factor of pure water (massive ice) from liquid to solid
     beo_poc = 0.0232  # ug C/ug dry sed (our data)
     beo_doc = 51.2323  # mg C/L thawed porewater (our data)
     massive_ice_poc = 4.5  # ug C/ml thawed massive ice (Collangelo-Lillis 2016)
-    massive_ice_doc = 0.85 + 0.65  # μg C/ml thawed massive ice. EPS as a proxy for DOC. (Colangelo-Lillis et al. 2016)
+    massive_ice_doc = 0.65  # μg C/ml thawed massive ice. EPS as a proxy for DOC. (Colangelo-Lillis et al. 2016)
     cbiw_brine_poc = 1.98 * 10**3  # in uM (Cooper et al. 2019)
     cbiw_brine_doc = 3 * 10**4  # in uM (Cooper et al. 2019)
 
@@ -118,7 +125,7 @@ def cbiw_scenario(do_sensitivity_analysis=False, use_me_growth_rate=False):
     beo_poc *= dry_sediment_density * (1 - beo_volumetric_ice_content) * 10**9
 
     # Converting from mg C/L thawed porewater * L thawed porewater/L permafrost to fg C/ml
-    beo_doc *= beo_volumetric_ice_content * (1-expansion_factor_permafrost) * 10**9
+    beo_doc *= beo_volumetric_ice_content * (1 - expansion_factor_porewater) * 10 ** 9
 
     # Converting from ug C/ml thawed massive ice to fg C/ml massive ice
     massive_ice_poc *= massive_ice_poc * (1-expansion_factor_ice) * 10**9
@@ -133,8 +140,11 @@ def cbiw_scenario(do_sensitivity_analysis=False, use_me_growth_rate=False):
     punctual_organic_carbon_addition = [(massive_ice_poc + massive_ice_doc, 11000)]  # Add massive ice carbon at 11000y.
     end_carbon = cbiw_brine_poc + cbiw_brine_doc
 
+    print("CBIW start carbon in micromolar: " + str(convert_fgC_per_ml_to_micromolar_carbon(start_carbon)))
+    print("CBIW end carbon in micromolar: " + str(convert_fgC_per_ml_to_micromolar_carbon(end_carbon)))
+
     start_cell = 10 ** 5  # Average cell/ml order of magnitue for sea-ice  (Cooper et al. 2019)
-    observed_end_cell = 5.7 * 10 ** 6  # cell/ml for CBIW_09 from (Colangelo-Lillis et al. 2016)
+    observed_end_cell = 1.30 * 10 ** 8  # average cell/ml of CBIW (Cooper et al. 2019)
     timespan = 40000  # Age in years based on carbon dating (Iwanaha et al. 2021)
     growth_rate = 0.06  # Marinobacter aerobic growth rate in-situ based on lab experiments (unpublished), 50% anaerobic penalty
     organic_carbon_per_cell = 15.7  # Litterature based value (Nguyen & Maranger 2011)
@@ -143,10 +153,10 @@ def cbiw_scenario(do_sensitivity_analysis=False, use_me_growth_rate=False):
 
     return run_analysis(start_carbon, end_carbon, start_cell, observed_end_cell, timespan, growth_rate,
                         organic_carbon_per_cell, inorganic_carbon_per_cell, inorganic_carbon_fixation_factor,
-                        punctual_organic_carbon_addition, do_sensitivity_analysis, use_me_growth_rate)
+                        punctual_organic_carbon_addition, do_sensitivity_analysis, use_me_growth_rate, use_me_lower_bound)
 
 
-def run_analysis(start_carbon, end_carbon, start_cell, observed_end_cell, timespan, growth_rate, org_carbon_per_cell, inorg_carbon_per_cell, inorg_carbon_fixation_factor, punctual_organic_carbon_addition=0, do_sensitivity_analysis=False, use_me_growth_rate=False):
+def run_analysis(start_carbon, end_carbon, start_cell, observed_end_cell, timespan, growth_rate, org_carbon_per_cell, inorg_carbon_per_cell, inorg_carbon_fixation_factor, punctual_organic_carbon_addition=0, do_sensitivity_analysis=False, use_me_growth_rate=False, use_me_lower_bound=True):
 
     # Convert timespawn from years to days
     timespan *= 365.25
@@ -159,8 +169,10 @@ def run_analysis(start_carbon, end_carbon, start_cell, observed_end_cell, timesp
             punctual_organic_carbon_addition[i] = (carbon_addded, timespan - time_to_add*365.25)  # Convert from years to days, and go from end not from start
 
     # Estimate bounds for maintenance energy
-    me_upper = estimate_me_no_growth(start_carbon, end_carbon, observed_end_cell, timespan)
-    me_growth_rate, me_lower = estimate_me_exp_growth(start_carbon, end_carbon, start_cell, observed_end_cell, org_carbon_per_cell, timespan)
+    me_lower = estimate_me_no_growth(start_carbon, end_carbon, observed_end_cell, timespan)
+    me_upper_growth_rate, doubling_time, me_upper = estimate_me_exp_growth(start_carbon, end_carbon, start_cell,
+                                                                           observed_end_cell, org_carbon_per_cell,
+                                                                           timespan)
 
     # Build paramater, ivp arrays (ORDER MATTERS)                                      IVP:
     #  carrying_capacity = p[1]                organic_carbon_input = p[2]               organic_carbon_content = u[1]
@@ -169,10 +181,12 @@ def run_analysis(start_carbon, end_carbon, start_cell, observed_end_cell, timesp
     #  organic_carbon_content_per_cell = p[7]  inorganic_carbon_content_per_cell = p[8]  timespan = u[4]
     #  mu_max = p[9]                           base_maintenance_per_cell = p[10]
     #  punctual_carbon_added = p[11]           m_prime = p[12]
-    growth_rate = me_growth_rate if use_me_growth_rate else growth_rate  # Switch out growth rate to calcualted one
+    growth_rate = me_upper_growth_rate if use_me_growth_rate else growth_rate  # Switch out growth rate to calcualted one
+    me = me_lower if use_me_lower_bound else me_upper  # Switch out maintenance energy based on paramater
     death_rate = 0 if use_me_growth_rate else 0.001  # Switch out death rate to 0 for net calculated growth rate
+
     p = [10**9, 0, 0, death_rate, inorg_carbon_fixation_factor, 882000000, org_carbon_per_cell,
-         inorg_carbon_per_cell, growth_rate, me_lower, punctual_organic_carbon_addition, 0]
+         inorg_carbon_per_cell, growth_rate, me, punctual_organic_carbon_addition, 0]
     ivp = [start_carbon, 0, start_cell, timespan]
 
     # Run the model through PyJulia using the lower ME
@@ -186,7 +200,7 @@ def run_analysis(start_carbon, end_carbon, start_cell, observed_end_cell, timesp
     if do_sensitivity_analysis:
         ST, S1 = run_sensitivity_analysis(p, default_paramater_bounds, ivp)
 
-    return (me_lower, me_upper, me_growth_rate), (S, I, N, t), ratio_dimensions, (ST, S1)
+    return (me_lower, me_upper, me_upper_growth_rate, doubling_time), (S, I, N, t), ratio_dimensions, (ST, S1)
 
 
 def log_results(results, savefig=True):
@@ -198,7 +212,7 @@ def log_results(results, savefig=True):
     labels = []
 
     for result, label in results:
-        (me_lower, me_upper, me_growth_rate), (S, I, N, t), ratio_dimensions, (ST, S1) = result
+        (me_lower, me_upper, me_growth_rate, doubling_time), (S, I, N, t), ratio_dimensions, (ST, S1) = result
 
         # Store for collective plot
         S_array.append(S)
@@ -207,12 +221,22 @@ def log_results(results, savefig=True):
         t_array.append(t)
         labels.append(label)
 
-        # Individual plots
-        if "- Calculated Growth Rate" not in label:  # Same results, don't log twice
-            print(label + " Maintenance energy (low, high, low growth rate) in fg C/cell day and /day: ("
-                  + str(me_lower) + ", " + str(me_upper) + ", " + str(me_growth_rate) + ")")
-        # print(label + " Brine expansion ratio for linear dimensions is: " + str(ratio_dimensions) + "% along each axis per year.")
+        # Log endpoints and ME calculations
 
+        print(label + " end organic carbon is: {}".format(np.format_float_scientific(S[-1], precision=2)))
+        print(label + " end cell density is: {}".format(np.format_float_scientific(N[-1], precision=2)))
+
+        if "- Calculated Growth Rate" not in label:  # Same results, don't log twice
+            print(label + " Maintenance energy (low, high, low growth rate, doubling_time) in fg C/cell day and /day: ({}, {}. {}, {})"
+                  .format(np.format_float_scientific(me_lower, precision=4),
+                          np.format_float_scientific(me_upper, precision=4),
+                          np.format_float_scientific(me_growth_rate, precision=4),
+                          doubling_time/365.25
+                          )
+                  )
+        # print(label + " Brine expansion ratio for linear dimensions is: {.2f} % along each axis per year.".format(ratio_dimensions))
+
+        # Individual plots
         model_fig = plot_model(S, I, N, t, label)
         # model_fig.show()
 
@@ -225,11 +249,10 @@ def log_results(results, savefig=True):
             # sa_fig.show()
 
             if savefig:
-                sa_fig.savefig("Plots/" +label + "_sa.pdf", format="pdf", dpi=500, bbox_inches='tight')
-
+                sa_fig.savefig("Plots/" + label + "_sa.pdf", format="pdf", dpi=500, bbox_inches='tight')
 
     # Make collective plot
-    colors = ["darkgreen", "lightgreen", "violet", "blue", "peru", "orange"]
+    colors = ["darkgreen", "red", "violet", "pink", "peru", "black"]
     scenarios_fig = plot_multiple_scenarios(S_array, I_array, N_array, t_array, labels, "Model outputs of all considered scenarios", colors)
     # scenarios_fig.show()
 
@@ -241,14 +264,9 @@ if __name__ == "__main__":
     # Generates all figures and data points presented.
     all_results = []
 
-    all_results.append((cb1_general_scenario(do_sensitivity_analysis=False, use_me_growth_rate=False), "Average"))
-    all_results.append((cb1_general_scenario(do_sensitivity_analysis=False, use_me_growth_rate=True), "Average - Calculated Growth Rate"))
-
-    all_results.append((cb4_scenario(do_sensitivity_analysis=False, use_me_growth_rate=False), "CB4"))
-    all_results.append((cb4_scenario(do_sensitivity_analysis=False, use_me_growth_rate=True), "CB4 - Calculated Growth Rate"))
-
-    all_results.append((cbiw_scenario(do_sensitivity_analysis=False, use_me_growth_rate=False), "CBIW"))
-    all_results.append((cbiw_scenario(do_sensitivity_analysis=False, use_me_growth_rate=True), "CBIW - Calculated Growth Rate"))
+    all_results.append((cb1_common_scenario(do_sensitivity_analysis=True, use_me_growth_rate=False, use_me_lower_bound=True), "Intra-sediment"))
+    all_results.append((cb4_scenario(do_sensitivity_analysis=False, use_me_growth_rate=False, use_me_lower_bound=True), "CB4"))
+    all_results.append((cbiw_scenario(do_sensitivity_analysis=False, use_me_growth_rate=False, use_me_lower_bound=True), "Intra-ice"))
 
     log_results(all_results)
 

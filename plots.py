@@ -103,20 +103,22 @@ def hypothetical_growth_scenarios():
 
     fig.suptitle("Hypothetical growth scenarios", fontsize="x-large", fontweight="medium")
 
-    x = np.linspace(0, 40000, num=40000000)
+    x = np.linspace(0, 40000, num=4000)
 
     x_exp = np.linspace(0, 6.90776, num=len(x))
     y_exp = 10**5 * np.exp(x_exp)
     y_cyclic = 10**5 + (10**8 - 10**5)/2 + np.sin(x/4244.1333333333 + 1.5*np.pi) * (10**8 - 10**5)/2
     y_ng = np.full(shape=len(x), fill_value=10**8)
+    y_spike = np.where(x < 10, x*10**7 + 10**5, 10**8)
 
-    axis.plot(x, y_exp, label='Slow', color="green")
-    axis.plot(x, y_cyclic, label='Carbon addition', color="red")
-    axis.plot(x, y_ng, label='No Growth', color="yellow")
+    axis.semilogy(x, y_spike, label='Rapid', color="blue")
+    axis.semilogy(x, y_exp, label='Slow', color="green")
+    axis.semilogy(x, y_cyclic, label='Carbon addition', color="red")
+    axis.semilogy(x, y_ng, label='No Growth', color="yellow", linestyle='dashed')
 
+    axis.set_ylim([1, 10**10])
     axis.set_xlabel('Years from start')
     axis.set_ylabel('cells/ml')
-    axis.set_title('Cell count over time')
     axis.legend(loc=4)
 
     return fig

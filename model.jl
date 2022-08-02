@@ -5,6 +5,10 @@ using GlobalSensitivity
 using Statistics
 using Printf
 
+# Define model domain. Reject any values below 0. No partial cells
+function isoutofdomain(u,p,t)
+    return u[1] < 0 || u[2] < 0 || u[3] < 0
+end
 
 function run_model(p, u0)
     u0 = convert(Array{Float64}, u0)
@@ -16,7 +20,7 @@ function run_model(p, u0)
     # Set the time timespan
     tspan = (0.0, last(u0))
 
-    # Build a callback to introduce a discontinuity
+    # Build a callback to introduce a caarbon addition as it is a discontinuity
     punctual_organic_carbon_addition = p[11] == 0 ? [] : p[11]
     stops = []
     carbon = []
@@ -27,22 +31,16 @@ function run_model(p, u0)
 
     additions = Dict(Pair.(stops, carbon))
 
-    condition1(u,t,integrator) = any(x->t==x, stops)  # If we hit any of the stops return true
-    function affect1!(integrator)
+    addition_condition(u,t,integrator) = any(x->t==x, stops)  # If we hit any of the stops return true
+    function addition!(integrator)
         integrator.u[1] += additions[integrator.t]
         integrator.u[3] += 1 # Add a cell to simulate dormancy
     end
-    carbon_addition_cb = DiscreteCallback(condition1,affect1!)
-
-#     condition2(u,t,integrator) = any(0<u[3]<1)  # Can't have partial cells
-#     function affect2!(integrator)
-#         integrator.u[3] = 0
-#     end
-#     partial_cell_cb = DiscreteCallback(condition2,affect2!)
+    carbon_addition_cb = DiscreteCallback(addition_condition, addition!)
 
     # Build the ODE Problem and Solve
     prob = ODEProblem(model, u0[1:3], tspan, p)
-    sol = solve(prob, Rosenbrock23(), maxiters=Int(1e12), callback=carbon_addition_cb, tstops=stops)
+    sol = solve(prob, Rosenbrock23(), maxiters=Int(1e12), callback=carbon_addition_cb, tstops=stops, isoutofdomain=isoutofdomain)
 
     # Build results array
     results = [[x[1] for x in sol.u], [x[2] for x in sol.u], [x[3] for x in sol.u], sol.t]
@@ -66,9 +64,9 @@ function run_sensitivity_analysis(p, p_bounds, u0)
 
     # Define a function that remakes the problem and gets its result
     f1 = function (p)
-      prob1 = remake(prob;p=p)
-      sol = solve(prob1, Rosenbrock23(), saveat=collect(last(u0)), maxiters=Int(1e12))
-      [last(sol[1,:])]
+        prob1 = remake(prob;p=p)
+        sol = solve(prob1, Rosenbrock23(), saveat=collect(last(u0)), maxiters=Int(1e12), isoutofdomain=isoutofdomain)
+        [last(sol[1,:])]
     end
 
     # Run GSA

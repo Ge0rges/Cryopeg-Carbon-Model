@@ -1,8 +1,9 @@
+import matplotlib.pyplot as plt
 import numpy as np
 from plots import plot_model, plot_sensitivity
 from julia import Main
 from decimal import Decimal
-from sympy import symbols, exp, integrate
+from sympy import symbols, exp, integrate, log
 
 
 Main.include("model.jl")
@@ -33,8 +34,8 @@ Main.include("model.jl")
 ## MODEL PARAMATERS
 default_paramaters = [10 ** 9, 0, 0, 0.001, 0, 8.82*10**5, 140, 0, 0.06, 0.0006/(0.00069 * 0.4), 0, 0]
 default_paramater_names = ["Carrying capacity", "Organic carbon input", "Inorganic carbon input",
-                           "Death rate", "Inorganic carbon fixation rate", "Ks", "Organic carbon/cell",
-                           "Inorganic carbon/Cell", "Growth rate", "Maintenance energy",
+                           "Death rate", "Inorganic carbon fixation rate", "Ks", "Organic carbon per cell",
+                           "Inorganic carbon per cell", "Growth rate", "Maintenance energy",
                            "Punctual organic carbon added", "m'"]
 default_paramater_bounds = [None, None, None, None, None, [0.001, 10**10], [0, 500], None, [0, 10], [0, 500], None, None]
 assert len(default_paramaters) == len(default_paramater_names) == len(default_paramater_bounds)
@@ -69,6 +70,7 @@ def estimate_me_no_growth(start_carbon, end_carbon, end_cell, timespan):
     # end_carbon in fg C/ml - End carbon concentration
 
     m = (start_carbon - end_carbon) / (end_cell * timespan)
+
     return m
 
 
@@ -80,24 +82,25 @@ def estimate_me_exp_growth(start_carbon, end_carbon, start_cell, end_cell, cell_
     # end_carbon in fg C/ml - End carbon concentration
     # cell_carbon_content in fg C - Carbon content a cell takes up/releases upon birth/death
 
-    # N(t) = N_0 * exp(μ*t) where μ is growth rate
-    N0, mu, t = symbols("N_0 mu t", real=True)
+    # log(N_f/N_0) = μ*(tf_t0) where μ is growth rate
+    N0, mu, t = symbols("N_0 mu t", real=True)  # t is time elapsed
+
+    number_of_generations = np.log(end_cell / start_cell) / np.log(2)  # generations
+    doubling_time = timespan/number_of_generations  # days
+    mu = np.log(end_cell/start_cell)/timespan  # /days
 
     N0 = start_cell
-    mu = np.log(end_cell / start_cell) / timespan  # days ^-1
-    # number_of_generations = np.log(end_cell / start_cell) / np.log(2)  # generations
-    # doubling_time = timespan/number_of_generations  # days
-
-    N = N0 * exp(mu * t)
+    N = exp(mu*t + log(N0))
 
     # dS/dt = -g*dN/dt - Nm   where: g is cell_carbon_content,
     # m is maintenance energy, S is carbon concentration, N is cell concentration
     # Integrate from 0 to timespan.
     # Sf - S0 = -g(Nf-N0) - m∫N(t)dt
-    # m = (S0- Sf - g(Nf-N0))/∫N(t)dt
+    # m = (S0 - Sf - g(Nf-N0))/∫N(t)dt
     m = (start_carbon - end_carbon - cell_carbon_content * (end_cell - start_cell)) / integrate(N, (t, 0, timespan))
 
-    return mu, float(m)
+    # (end_cell - start_cell)
+    return mu, doubling_time, float(m)
 
 
 def run_model(p, ivp):
@@ -151,11 +154,11 @@ def calculate_brine_expansion(carbon_density_in_permafrost, carbon_required_per_
 
 
 # Example code for all analysis on default values
-if __name__ == "__main__":
-    # Estimate bounds for maintenance energy
-    me_upper = estimate_me_no_growth(default_ivp[1], default_ivp[1]/10, 10 ** 8, default_ivp[3])
-    growth_rate, me_lower = estimate_me_exp_growth(default_ivp[1], 100000, 10**5, 10**8, 400, default_ivp[3])
-    print("Bounds for maintenance energy are, low: " + str(me_lower) + " and high: " + str(me_upper) + " fg C/cell day")
+# if __name__ == "__main__":
+#     # Estimate bounds for maintenance energy
+#     me_upper = estimate_me_no_growth(default_ivp[1], default_ivp[1]/10, 10 ** 8, default_ivp[3])
+#     growth_rate, me_lower = estimate_me_exp_growth(default_ivp[1], 100000, 10**5, 10**8, 400, default_ivp[3])
+#     print("Bounds for maintenance energy are, low: " + str(me_lower) + " and high: " + str(me_upper) + " fg C/cell day")
 
     # # Run the model trhough PyJulia
     # S, I, N, t = run_model(default_paramaters, default_ivp)
