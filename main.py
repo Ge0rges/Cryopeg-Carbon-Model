@@ -194,7 +194,7 @@ def run_analysis(start_carbon, end_carbon, start_cell, observed_end_cell, timesp
     #  punctual_carbon_added = p[11]           m_prime = p[12]
     growth_rate = me_upper_growth_rate if use_me_growth_rate else growth_rate  # Switch out growth rate to calcualted one
     me = me_lower if use_me_lower_bound else me_upper  # Switch out maintenance energy based on paramater
-    death_rate = 0 if use_me_growth_rate else 0.001  # Switch out death rate to 0 for net calculated growth rate
+    death_rate = 0
 
     p = [10**9, 0, 0, death_rate, inorg_carbon_fixation_factor, 882000000, org_carbon_per_cell,
          inorg_carbon_per_cell, growth_rate, me, punctual_organic_carbon_addition, 0]
