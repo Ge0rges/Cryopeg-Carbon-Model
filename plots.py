@@ -124,8 +124,8 @@ def plot_sensitivity(ST, S1, p_names, label):
         axs.text(br1[index] - barWidth/2, ST[index], "%.2f" % ST[index], size=12)
         axs.text(br2[index] - barWidth/2, S1[index], "%.2f" % S1[index], size=12)
 
-    axs.set_xlabel('Organism parameter', fontsize=18)
-    axs.set_ylabel("Sobol Index", fontsize=18)
+    axs.set_xlabel('Organism parameter', fontsize=12)
+    axs.set_ylabel("Sobol Index", fontsize=12)
     axs.set_xticks([r + barWidth for r in range(len(ST))], p_names)
     axs.set_title("Sensitivity analysis of organism parameters - " + label + " scenario")
 

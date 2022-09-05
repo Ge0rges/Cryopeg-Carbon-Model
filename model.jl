@@ -10,13 +10,7 @@ function isoutofdomain(u,p,t)
     return u[1] < 0 || u[2] < 0 || u[3] < 0
 end
 
-function run_model(p, u0)
-    u0 = convert(Array{Float64}, u0)
-
-    # Check len of p and u0 to be 12 and 4
-    @assert size(p)[1] == 12 "Paramaters length incorrect"
-    @assert size(u0)[1] == 4 "IVP length incorect"
-
+function solve_model(p, u0)
     # Set the time timespan
     tspan = (0.0, last(u0))
 
@@ -40,7 +34,21 @@ function run_model(p, u0)
 
     # Build the ODE Problem and Solve
     prob = ODEProblem(model, u0[1:3], tspan, p)
-    sol = solve(prob, Rosenbrock23(), maxiters=Int(1e12), callback=carbon_addition_cb, tstops=stops, isoutofdomain=isoutofdomain)
+    sol = solve(prob, Rosenbrock23(), maxiters=Int(1e10), callback=carbon_addition_cb, tstops=stops,
+    isoutofdomain=isoutofdomain)
+
+    return sol
+end
+
+function run_model(p, u0)
+    u0 = convert(Array{Float64}, u0)
+
+    # Check len of p and u0 to be 12 and 4
+    @assert size(p)[1] == 12 "Paramaters length incorrect"
+    @assert size(u0)[1] == 4 "IVP length incorect"
+
+    # Solve
+    sol = solve_model(p, u0)
 
     # Build results array
     results = [[x[1] for x in sol.u], [x[2] for x in sol.u], [x[3] for x in sol.u], sol.t]
@@ -58,15 +66,10 @@ function run_sensitivity_analysis(p, p_bounds, u0)
     @assert size(p)[1] == 12 "Paramaters length incorrect"
     @assert size(u0)[1] == 4 "IVP length incorect"
 
-    # Build the initial ODE Problem
-    tspan = (0.0, last(u0))
-    prob = ODEProblem(model, u0[1:3], tspan, p)
-
     # Define a function that remakes the problem and gets its result
     f1 = function (p)
-        prob1 = remake(prob;p=p)
-        sol = solve(prob1, Rosenbrock23(), saveat=collect(last(u0)), maxiters=Int(1e12), isoutofdomain=isoutofdomain)
-        [last(sol[1,:])]
+        sol = solve_model(p, u0)
+        [last(sol[1,:] * 1e200)]
     end
 
     # Run GSA
@@ -134,3 +137,10 @@ function model(du,u,p,t)
     # Organic carbon
     du[1] = organic_carbon_input + organic_carbon_content_per_cell * (deaths - growth) - carbon_consumption + fixed_carbon
 end
+
+# run_sensitivity_analysis(
+#     # Change 3rd zero to non-zero value (e.g. 0.001) to work
+#     [1000000000, 0, 0, 0, 0, 882000000, 15.7, 0, 0.06, 0.1806273414373398, 0, 0],
+#     [1000000000 1000000000; 0 0; 0 0; 0 0; 0 0; 0.001 10000000000; 1 500; 0 0; 0 10; 1.0e-30 500; 0 0; 0 0],
+#     [1.6416161512877348e13, 0, 100000, 1.461e7]
+# )
