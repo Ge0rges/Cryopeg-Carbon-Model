@@ -120,12 +120,12 @@ function model(du,u,p,t)
     #TODO
 
     # Particulate Organic carbon
-    du[1] = pOC_input_rate - eea_rate*pOC_content
+    du[1] = pOC_input_rate - eea_rate*pOC_content*cell_count
     # Do i need to multiply the rate by t?
     #TODO
 
     # Dissolved Organic carbon
-    du[2] = dOC_input_rate + dOC_per_cell * (deaths - growth) - dOC_consumption + eea_rate*pOC_content + fixed_carbon
+    du[2] = dOC_input_rate + dOC_per_cell * (deaths - growth) - dOC_consumption + eea_rate*pOC_content*cell_count + fixed_carbon
 
     # Inorganic carbon
     du[3] = inorganic_carbon_input_rate + inorganic_carbon_per_cell * (deaths - growth) + required_dOC - fixed_carbon

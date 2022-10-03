@@ -43,8 +43,8 @@ class Scenario:
 
     _timespan = 40000*365.25  # Age in days based on carbon dating (Iwanaha et al. 2021)
 
-    _start_eea = 0  # fg dOC/(fg pOC * ml * day) - The hydrolysis rate of pOC into dOC by extracellular enzymes with dOC present.
-    _end_eea = 0  # fg dOC/(fg pOC * ml * day) - The measured hydrolysis rate of pOC into dOC by extracellular enzymes today.
+    _start_eea = 0  # fg dOC/(fg pOC * cell * day) - The hydrolysis rate of pOC into dOC by extracellular enzymes with dOC present.
+    _end_eea = 0  # fg dOC/(fg pOC * cell * day) - The measured hydrolysis rate of pOC into dOC by extracellular enzymes today.
     #TODO real values
 
     # _Ks: fg C - The organic carbon concentration at which u = 1/2 u0.

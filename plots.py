@@ -59,7 +59,6 @@ def plot_multiple_scenarios(analyses: [Analysis], colors, line_styles):
     t_array = [analysis.model_result.t for analysis in analyses]
     labels = [analysis.title for analysis in analyses]
 
-    print(labels)
     fig, axs = plt.subplots(1, 4, dpi=500, figsize=(20, 10))
 
     fig.suptitle("Model outputs of all considered scenarios", fontsize="xx-large", fontweight="medium")
