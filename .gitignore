@@ -5,3 +5,4 @@ venv/
 .vscode/launch.json
 Plots/*
 *.pyc
+__pycache__/*
