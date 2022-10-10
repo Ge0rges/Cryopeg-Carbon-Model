@@ -30,7 +30,10 @@ function solve_model(p, u0)
     function addition!(integrator)
         integrator.u[1] += additions[integrator.t][1]
         integrator.u[2] += additions[integrator.t][2]
-        integrator.u[3] += 1 # Add a cell to simulate dormancy
+
+        if integrator.u[3] < 1
+            integrator.u[3] = 1  # Add a viable cell if none exist
+        end
     end
     carbon_add_cb = DiscreteCallback(addition_condition, addition!)
 
