@@ -35,8 +35,8 @@ function solve_model(p, u0)
     carbon_add_cb = DiscreteCallback(addition_condition, addition!)
 
     # Build the ODE Problem and Solve
-    prob = ODEProblem(model, u0[1:4], tspan, p)
-    sol = solve(prob, Rosenbrock23(), callback=carbon_add_cb, tstops=stops, isoutofdomain=is_invalid_domain, maxiters=1e10)
+    prob = ODEProblem(model, u0, tspan, p)
+    sol = solve(prob, Rosenbrock23(), callback=carbon_add_cb, tstops=stops, isoutofdomain=is_invalid_domain, maxiters=1e6)
 
     return sol
 end
