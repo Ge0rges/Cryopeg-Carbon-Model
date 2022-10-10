@@ -43,18 +43,18 @@ class Scenario:
 
     _timespan = 40000*365.25  # Age in days based on carbon dating (Iwanaha et al. 2021)
 
-    _start_eea = 0  # fg dOC/(fg pOC * cell * day) - The hydrolysis rate of pOC into dOC by extracellular enzymes with dOC present.
-    _end_eea = 0  # fg dOC/(fg pOC * cell * day) - The measured hydrolysis rate of pOC into dOC by extracellular enzymes today.
-    #TODO real values
+    _eea_rate = 0.012192  # fg pOC/cell * day - The hydrolysis rate of pOC by extracellular enzymes (Showalter, 2021)
 
     # _Ks: fg C - The organic carbon concentration at which u = 1/2 u0.
     _Ks = 8.82 * 10 ** 5  # average Ks ug AA/L = 2.152 (Yager & Deming 1999) * DCAA are 41% carbon (Rowe & Deming 1985)
 
-    _paramater_bounds = [None, None, None, None, None, [0.001, 10 ** 10],  # Ordered bounds for sensitivty analysis
-                         [1, 500], None, [0, 10], [10 ** -30, 500], None, None, None]  # as in julia p list.
+    _paramater_bounds = [[10**-6, 10**3], [10**-7, 500], [1, 500], None, None,  # Ordered bounds for sensitivty analysis
+                         None, None, None, None, [10**-8, 100], None,
+                         None]  # as in julia p list.
     _paramater_names = ["Growth rate", "Maintenance energy", "dOC/cell", "Carrying capacity", "pOC input rate",
                         "dOC input rate", "Inorganic carbon input rate", "Inorganic carbon fixation rate", "IC/cell",
-                        "Start EEA", "End EEA", "Ks", "Punctual organic carbon addition"]
+                        "EEA rate", "Ks",
+                        "Punctual organic carbon addition"]
 
     # Methods
     def get_julia_ordered_paramaters(self):
@@ -65,11 +65,18 @@ class Scenario:
         """
         punctual_organic_carbon_addition = -1 if len(self.punctual_organic_carbon_addition) == 0 else self.punctual_organic_carbon_addition  # Can't pass empty arrays to Julia
 
-        return [self.growth_rate, self.maintenance_per_cell, self.dissolved_organic_carbon_per_cell,
+        ordered_p = [self.growth_rate, self.maintenance_per_cell, self.dissolved_organic_carbon_per_cell,
                 self._carrying_capacity, self._particulate_organic_carbon_input_rate,
                 self._dissolved_organic_carbon_input_rate, self._inorganic_carbon_input_rate,
                 self._inorganic_carbon_fixation_rate, self._inorganic_carbon_per_cell,
-                self._start_eea, self._end_eea, self._Ks, punctual_organic_carbon_addition]
+                self._eea_rate, self._Ks,
+                     punctual_organic_carbon_addition]
+        # punctual_organic_carbon_addition always at end in julia code. Changes to this array must be manually carried
+        # to model.jl run_model()
+
+        assert len(self._paramater_bounds) == len(self._paramater_names) == len(ordered_p)
+
+        return ordered_p
 
     def get_julia_ordered_ivp(self):
         """

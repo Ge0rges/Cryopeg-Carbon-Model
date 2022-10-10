@@ -18,7 +18,7 @@ function solve_model(p, u0)
     # Build a callback to introduce a carbon addition as it is a discontinuity
     stops = []
     carbon = []
-    punctual_organic_carbon_addition = p[13] == -1 ? [] : p[13]
+    punctual_organic_carbon_addition = p[end] == -1 ? [] : p[end]
     for (time_to_add, (pOC_to_add, dOC_to_add)) in punctual_organic_carbon_addition
         push!(stops, time_to_add)
         push!(carbon, (pOC_to_add, dOC_to_add))
@@ -36,7 +36,7 @@ function solve_model(p, u0)
 
     # Build the ODE Problem and Solve
     prob = ODEProblem(model, u0[1:4], tspan, p)
-    sol = solve(prob, Rosenbrock23(), callback=carbon_add_cb, tstops=stops, isoutofdomain=is_invalid_domain)
+    sol = solve(prob, Rosenbrock23(), callback=carbon_add_cb, tstops=stops, isoutofdomain=is_invalid_domain, maxiters=1e10)
 
     return sol
 end
@@ -73,7 +73,7 @@ end
 
 # Implements the differential equations that define the model
 function model(du,u,p,t)
-    p = convert(Array{Float64}, p[1:12])
+    p = convert(Array{Float64}, p[1:end-1])
 
     # Paramaters
     mu_max = p[1]
@@ -86,9 +86,8 @@ function model(du,u,p,t)
     inorganic_carbon_input_rate = p[7]
     inorganic_carbon_fixing_rate = p[8]
     inorganic_carbon_per_cell = p[9]
-    start_eea = p[10]
-    end_eea = p[11]
-    Ks = p[12]
+    eea_rate = p[10]
+    Ks = p[11]
 
     # Load state conditions
     pOC_content = u[1]
@@ -114,10 +113,6 @@ function model(du,u,p,t)
     ## CARBON
     dOC_consumption = required_dOC_per_cell * (cell_count - deaths)
     fixed_carbon = inorganic_carbon_fixing_rate * inorganic_carbon_content
-
-    # Pick the appropriate EEA rate
-    eea_rate = dOC_content <= 10*dOC_consumption ? end_eea : start_eea  # Arbitrary threshold
-    #TODO
 
     # Particulate Organic carbon
     du[1] = pOC_input_rate - eea_rate*pOC_content*cell_count

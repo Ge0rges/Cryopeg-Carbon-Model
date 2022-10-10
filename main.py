@@ -20,8 +20,9 @@ def log_results(analyses, savelog=True):
     Displays or saves the plots for each analysis done. Prints or save endpoints of model and maintenance energy
     calculations. Saves plots and values to disk if savelog is true.
     """
-    csv_header = ["Analysis title", "End dOC", "End cell density", "Maintenance energy lower bounds",
-                  "Maintenance energy upper bound", "Minimum growth rate", "Minimum doubling time",
+    csv_header = ["Analysis title", "Start pOC", "Start dOC", "Present pOC", "Present dOC",  "Predicted end dOC",
+                  "Present cell density", "Predicted end cell density", "dOC per cell", "Maintenance energy lower bounds",
+                  "Maintenance energy upper bound", "Used growth rate", "Minimum growth rate", "Minimum doubling time",
                   "Brine expansion factor"]
     csv_rows = []
 
@@ -32,10 +33,17 @@ def log_results(analyses, savelog=True):
 
         # Endpoints and ME values
         values = [analysis.title,
+                  np.format_float_scientific(analysis.scenario.start_poc, precision=2),
+                  np.format_float_scientific(analysis.scenario.start_doc, precision=2),
+                  np.format_float_scientific(analysis.scenario.end_poc, precision=2),
+                  np.format_float_scientific(analysis.scenario.end_doc, precision=2),
                   np.format_float_scientific(analysis.model_result.dOC[-1], precision=2),
+                  np.format_float_scientific(analysis.scenario.observed_end_cell_density, precision=2),
                   np.format_float_scientific(analysis.model_result.cells[-1], precision=2),
+                  np.format_float_scientific(analysis.maintenance_energy_result.dissolved_organic_carbon_per_cell, precision=2),
                   np.format_float_scientific(analysis.maintenance_energy_result.lower_bound_me, precision=4),
                   np.format_float_scientific(analysis.maintenance_energy_result.upper_bound_me, precision=4),
+                  np.format_float_scientific(analysis.scenario.growth_rate, precision=4),
                   np.format_float_scientific(analysis.maintenance_energy_result.minimum_growth_rate, precision=4),
                   analysis.maintenance_energy_result.minimum_doubling_time / 365.25,
                   "{:.2f}%".format(analysis.expansion_result.ratio_dimensions)]
