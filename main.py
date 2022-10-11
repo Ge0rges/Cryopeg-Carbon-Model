@@ -20,10 +20,10 @@ def log_results(analyses, savelog=True):
     Displays or saves the plots for each analysis done. Prints or save endpoints of model and maintenance energy
     calculations. Saves plots and values to disk if savelog is true.
     """
-    csv_header = ["Analysis title", "Start pOC", "Start dOC", "Present pOC", "Present dOC",  "Predicted end dOC",
-                  "Present cell density", "Predicted end cell density", "dOC per cell", "Maintenance energy lower bounds",
-                  "Maintenance energy upper bound", "Used growth rate", "Minimum growth rate", "Minimum doubling time",
-                  "Brine expansion factor"]
+    csv_header = ["Analysis title", "Surrounding pOC", "Surrounding dOC", "Brine pOC", "Predicted brine pOC",
+                  "Brine dOC", "Predicted brine dOC", "Present cell density", "Predicted end cell density",
+                  "dOC per cell", "Maintenance energy lower bounds", "Maintenance energy upper bound",
+                  "Simulation growth rate", "Minimum growth rate", "Minimum doubling time", "Brine expansion factor"]
     csv_rows = []
 
     for analysis in analyses:
@@ -36,6 +36,7 @@ def log_results(analyses, savelog=True):
                   np.format_float_scientific(analysis.scenario.start_poc, precision=2),
                   np.format_float_scientific(analysis.scenario.start_doc, precision=2),
                   np.format_float_scientific(analysis.scenario.end_poc, precision=2),
+                  np.format_float_scientific(analysis.model_result.pOC[-1], precision=2),
                   np.format_float_scientific(analysis.scenario.end_doc, precision=2),
                   np.format_float_scientific(analysis.model_result.dOC[-1], precision=2),
                   np.format_float_scientific(analysis.scenario.observed_end_cell_density, precision=2),
@@ -43,7 +44,7 @@ def log_results(analyses, savelog=True):
                   np.format_float_scientific(analysis.scenario.dissolved_organic_carbon_per_cell, precision=2),
                   np.format_float_scientific(analysis.maintenance_energy_result.lower_bound_me, precision=4),
                   np.format_float_scientific(analysis.maintenance_energy_result.upper_bound_me, precision=4),
-                  np.format_float_scientific(analysis.scenario.growth_rate, precision=4),
+                  np.format_float_scientific(analysis.scenario._growth_rate, precision=4),
                   np.format_float_scientific(analysis.maintenance_energy_result.minimum_growth_rate, precision=4),
                   analysis.maintenance_energy_result.minimum_doubling_time / 365.25,
                   "{:.2f}%".format(analysis.expansion_result.ratio_dimensions)]
@@ -53,12 +54,12 @@ def log_results(analyses, savelog=True):
             model_fig.savefig("Plots/" + analysis.title + "_model.pdf", format="pdf", dpi=500, bbox_inches='tight')
             csv_rows.append(values)
 
-            if analysis.do_sensitivity_analysis:
+            if sa_fig:
                 sa_fig.savefig("Plots/" + analysis.title + "_sa.pdf", format="pdf", dpi=500, bbox_inches='tight')
 
         else:
             model_fig.show()
-            if analysis.do_sensitivity_analysis:
+            if sa_fig:
                 sa_fig.show()
 
             print(csv_header)
@@ -72,8 +73,8 @@ def log_results(analyses, savelog=True):
             write.writerows(csv_rows)
 
     # Make collective plot
-    colors = None  #["blue", "orange", "red"]
-    line_styles = None #["solid", "dashed", "dotted"]
+    colors = None  # ["blue", "orange", "red"]
+    line_styles = None  # ["solid", "dashed", "dotted"]
     scenarios_fig = plot_multiple_scenarios(analyses, colors, line_styles)
 
     if savelog:  # Plots folder must exist in same directory as main.py

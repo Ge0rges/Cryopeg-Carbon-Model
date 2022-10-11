@@ -3,7 +3,7 @@ using DiffEqSensitivity
 using ForwardDiff
 using GlobalSensitivity
 using Statistics
-using Printf
+
 
 # Define model domain. Reject any values below 0.
 function is_invalid_domain(u,p,t)
@@ -21,7 +21,7 @@ function solve_model(p, u0)
     punctual_organic_carbon_addition = p[end] == -1 ? [] : p[end]
     for (time_to_add, (pOC_to_add, dOC_to_add)) in punctual_organic_carbon_addition
         push!(stops, time_to_add)
-        push!(carbon, (pOC_to_add, dOC_to_add))
+        push!(carbon, (convert(Float64, pOC_to_add), convert(Float64, dOC_to_add)))
     end
 
     additions = Dict(Pair.(stops, carbon))
@@ -37,8 +37,11 @@ function solve_model(p, u0)
     end
     carbon_add_cb = DiscreteCallback(addition_condition, addition!)
 
+    # Convert p and remove puncutal_punctual_organic_carbon_addition
+    p = convert(Array{Float64}, p[1:end-1])
+
     # Build the ODE Problem and Solve
-    prob = ODEProblem(model, u0, tspan, p)
+    prob = ODEProblem(model, u0[1:end-1], tspan, p)
     sol = solve(prob, Rosenbrock23(), callback=carbon_add_cb, tstops=stops, isoutofdomain=is_invalid_domain, maxiters=1e6)
 
     return sol
@@ -76,8 +79,6 @@ end
 
 # Implements the differential equations that define the model
 function model(du,u,p,t)
-    p = convert(Array{Float64}, p[1:end-1])
-
     # Paramaters
     mu_max = p[1]
     maintenance_per_cell = p[2]

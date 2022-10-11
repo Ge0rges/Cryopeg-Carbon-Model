@@ -4,6 +4,7 @@ Functions take a scenario object, an
 """
 
 import numpy as np
+import copy
 
 from utils import *
 from scenario import Scenario
@@ -37,7 +38,6 @@ class Analysis:
     """
     scenario: Scenario = None
 
-    do_sensitivity_analysis: bool = None
     _use_minimum_growth_rate: bool = None
     _use_me_lower_bound: bool = None
 
@@ -52,9 +52,13 @@ class Analysis:
         """
         Initiates the analysis and construts its title.
         """
-        self.scenario = scenario
-        self.use_minimum_growth_rate = use_minimum_growth_rate
-        self.use_me_lower_bound = use_me_lower_bound
+        self.scenario = copy.deepcopy(scenario)
+        self._use_minimum_growth_rate = use_minimum_growth_rate
+        self._use_me_lower_bound = use_me_lower_bound
+
+        # Invalidate any growth rate present, we need to calcualte it
+        if self._use_minimum_growth_rate:
+            self.scenario.growth_rate = None
 
         self.title = self.scenario.title + " - "
         self.title += "minimum growth rate - " if use_minimum_growth_rate else "lab growth rate - "
@@ -72,10 +76,10 @@ class Analysis:
         self.maintenance_energy_result = estimate_me_bounds(self.scenario)
 
         # Switch out growth rate to calcualted one if required
-        self.scenario.growth_rate = self.maintenance_energy_result.minimum_growth_rate if self.use_minimum_growth_rate else self.scenario.growth_rate
+        self.scenario._growth_rate = self.maintenance_energy_result.minimum_growth_rate if self._use_minimum_growth_rate else self.scenario.lab_growth_rate
 
         # Switch out maintenance energy based on paramater
-        self.scenario.maintenance_per_cell = self.maintenance_energy_result.lower_bound_me if self.use_me_lower_bound else self.maintenance_energy_result.upper_bound_me
+        self.scenario.maintenance_per_cell = self.maintenance_energy_result.lower_bound_me if self._use_me_lower_bound else self.maintenance_energy_result.upper_bound_me
 
         # Run the model through PyJulia using the lower ME
         self.model_result = run_model(self.scenario)
@@ -138,6 +142,25 @@ def estimate_me_bounds(scenario: Scenario):
     result.upper_bound_me = m_up
 
     return result
+
+
+def estimate_end_eps(analysis: Analysis):
+    """
+    Estimates total EPS produced by the system.
+    """
+    eps_rate = 0  # analysis.scenario._eps_production_rate
+
+    cells = analysis.model_result.cells
+    timepoints = analysis.model_result.t
+
+    total_eps = 0
+
+    for i, cell_counts in enumerate(cells):
+        if i == len(cell_counts) - 1:
+            delta_t = timepoints[i+1] - timepoints[i]
+            total_eps += delta_t*eps_rate*cell_counts
+
+    return total_eps
 
 
 def run_model(scenario: Scenario):

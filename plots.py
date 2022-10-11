@@ -59,6 +59,8 @@ def plot_multiple_scenarios(analyses: [Analysis], colors, line_styles):
     t_array = [analysis.model_result.t for analysis in analyses]
     labels = [analysis.title for analysis in analyses]
 
+    assert len(labels) == len(P_array) == len(t_array) == len(D_array) == len(I_array) == len(N_array)
+
     fig, axs = plt.subplots(1, 4, dpi=500, figsize=(20, 10))
 
     fig.suptitle("Model outputs of all considered scenarios", fontsize="xx-large", fontweight="medium")
@@ -103,7 +105,7 @@ def plot_multiple_scenarios(analyses: [Analysis], colors, line_styles):
     axs[3].set_ylabel('cells/mL')
     axs[3].set_title('Cell count over time')
 
-    axs[3].legend(loc=0)
+    axs[2].legend(loc=0)
 
     return fig
 
@@ -146,7 +148,7 @@ def plot_sensitivity(analysis: Analysis):
     """
 
     # Check there are results
-    if not analysis.do_sensitivity_analysis:
+    if analysis.sensitivity_analysis_result is None:
         return None
 
     p_names = analysis.scenario._paramater_names
