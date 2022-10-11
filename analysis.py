@@ -155,10 +155,10 @@ def estimate_end_eps(analysis: Analysis):
 
     total_eps = 0
 
-    for i, cell_counts in enumerate(cells):
-        if i == len(cell_counts) - 1:
+    for i, cell_count in enumerate(cells):
+        if i == len(cell_count) - 1:
             delta_t = timepoints[i+1] - timepoints[i]
-            total_eps += delta_t*eps_rate*cell_counts
+            total_eps += delta_t*eps_rate*cell_count
 
     return total_eps
 
