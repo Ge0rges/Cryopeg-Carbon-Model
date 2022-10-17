@@ -17,7 +17,7 @@ def convert_fgC_per_ml_to_micromolar_carbon(fgC_per_ml):
 
 class MaintenanceResult:
     """
-    Class to encapsulate the maintenance energy results.
+    Class that encapsulates the result of a maintenance energy estimation.
     """
     lower_bound_me: float = None
     upper_bound_me: float = None
@@ -27,7 +27,7 @@ class MaintenanceResult:
 
 class SensitivityResult:
     """
-    Class to encapsulate results of a sensitivity analysis.
+    Class that encapsulates the results of a sensitivity analysis.
     """
     total_sobol_indices: [float] = None
     first_order_sobol_indices: [float] = None
@@ -35,7 +35,7 @@ class SensitivityResult:
 
 class ModelResult:
     """
-    Class to encapsulate results of a model run.
+    Class that encapsulates the results of a model run.
     """
     pOC: [float] = None
     dOC: [float] = None
@@ -46,10 +46,19 @@ class ModelResult:
 
 class ExpansionResult:
     """
-    Class to encapsulate results of a brine expansion calculation.
+    Class that encapsulates the results of a brine expansion calculation.
     """
     ratio_volume: Decimal = None  # Ratio of expansion at 3D
     ratio_area: Decimal = None  # Ratio of expansion at 2D
     ratio_dimensions: Decimal = None  # Ratio of expansion at 1D
     expansion_a: Decimal = None  # Expansion along the A-axis of the prolate spheroid.
     expansion_b: Decimal = None  # Expansion along the B-axis of the prolate spheroid.
+
+
+class EEAResult:
+    """
+    Class that encapsulates a EEA rate calculation result.
+    """
+    eea_upper: float = None
+    eea_lower: float = None
+    predicted_timespan: float = None

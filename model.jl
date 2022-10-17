@@ -3,7 +3,7 @@ using DiffEqSensitivity
 using ForwardDiff
 using GlobalSensitivity
 using Statistics
-
+using Printf
 
 # Define model domain. Reject any values below 0.
 function is_invalid_domain(u,p,t)
@@ -42,7 +42,7 @@ function solve_model(p, u0)
 
     # Build the ODE Problem and Solve
     prob = ODEProblem(model, u0[1:end-1], tspan, p)
-    sol = solve(prob, Rosenbrock23(), callback=carbon_add_cb, tstops=stops, isoutofdomain=is_invalid_domain, maxiters=1e6)
+    sol = solve(prob, Rosenbrock23(), callback=carbon_add_cb, tstops=stops, isoutofdomain=is_invalid_domain, maxiters=1e7)
 
     return sol
 end
@@ -72,7 +72,7 @@ function run_sensitivity_analysis(p, p_bounds, u0)
     end
 
     # Run GSA
-    sobol_result = GlobalSensitivity.gsa(f1, Sobol(), p_bounds, Ei_estimator=:Sobol2007, samples=2^12)
+    sobol_result = GlobalSensitivity.gsa(f1, Sobol(), p_bounds, Ei_estimator=:Sobol2007, samples=2^2)
     return (sobol_result.ST[1,:], sobol_result.S1[1,:])
 end
 

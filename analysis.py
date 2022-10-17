@@ -10,7 +10,8 @@ from utils import *
 from scenario import Scenario
 from julia import Main
 from decimal import Decimal
-from sympy import symbols, exp, integrate, log
+from sympy import symbols, exp, integrate, log, Eq, solveset, Reals
+
 
 Main.include("model.jl")
 
@@ -45,6 +46,8 @@ class Analysis:
     sensitivity_analysis_result: SensitivityResult = None
     model_result: ModelResult = None
     expansion_result: ExpansionResult = None
+    end_eps: float = None
+    eea_estimation: EEAResult = None
 
     title = None
 
@@ -91,6 +94,12 @@ class Analysis:
         # Run the sensitivity analysis
         self.sensitivity_analysis_result = run_sensitivity_analysis(self.scenario) if do_sensitivity_analysis else None
 
+        # Calculate eps produced
+        self.end_eps = estimate_end_eps(self)
+
+        # Calculate EEA rate bounds
+        self.eea_estimation = estimate_eea_rate(self.scenario)
+
 
 def estimate_me_bounds(scenario: Scenario):
     """
@@ -116,7 +125,7 @@ def estimate_me_bounds(scenario: Scenario):
     end_carbon = scenario.end_poc + scenario.end_doc
     cell_carbon_content = scenario.dissolved_organic_carbon_per_cell
 
-    # log(N_f/N_0) = μ*(tf_t0) where μ is growth rate
+    # log(N_f/N_0) = μ*(tf-t0) where μ is growth rate
     N0, mu, t = symbols("N_0 mu t", real=True)  # t is time elapsed
 
     number_of_generations = np.log(end_cell / start_cell) / np.log(2)  # generations
@@ -146,9 +155,11 @@ def estimate_me_bounds(scenario: Scenario):
 
 def estimate_end_eps(analysis: Analysis):
     """
-    Estimates total EPS produced by the system.
+    Estimates total EPS produced by the system given a model's cell over time result.
     """
-    eps_rate = 0  # analysis.scenario._eps_production_rate
+    assert analysis.model_result
+
+    eps_rate = 0.337712  # fg C/cell day From Stoderegger and Herndl, 1998 (7.1 amol C/cell hr). Applied Q10 (f=2), 20C.
 
     cells = analysis.model_result.cells
     timepoints = analysis.model_result.t
@@ -156,11 +167,49 @@ def estimate_end_eps(analysis: Analysis):
     total_eps = 0
 
     for i, cell_count in enumerate(cells):
-        if i == len(cell_count) - 1:
+        if i < len(cells) - 1 and cell_count >= 1:
             delta_t = timepoints[i+1] - timepoints[i]
             total_eps += delta_t*eps_rate*cell_count
 
     return total_eps
+
+
+def estimate_eea_rate(scenario: Scenario):
+    """
+    Estimates the extracellular enzyme activity rate for the total amount of POC converted to DOC in a given timeframe.
+    """
+    total_poc_added = scenario._timespan * scenario._particulate_organic_carbon_input_rate
+
+    for p_add in scenario.punctual_organic_carbon_addition:
+        total_poc_added += p_add[1][0]
+
+    poc_converted = (scenario.start_poc + total_poc_added) - scenario.end_poc
+
+    start_cell = scenario._start_cell
+    end_cell = scenario.observed_end_cell_density
+    timespan = scenario._timespan
+
+    # log(N_f/N_0) = μ*(tf-t0) where μ is growth rate
+    N0, mu, t, p = symbols("N_0 mu t p", real=True)  # t is time elapsed
+
+    mu = np.log(scenario.observed_end_cell_density / start_cell) / timespan  # /days
+
+    N0 = start_cell
+    N = exp(mu * t + log(N0))
+
+    eea_upper = poc_converted/integrate(N, (t, 0, timespan))
+    eea_lower = poc_converted/(end_cell * timespan)
+
+    eq = Eq(integrate(N, (t, 0, p)), poc_converted/scenario._eea_rate)
+
+    predicted_timespan = solveset(eq, p, domain=Reals)
+
+    result = EEAResult()
+    result.eea_upper = eea_upper
+    result.eea_lower = eea_lower
+    result.predicted_timespan = predicted_timespan.args[0]
+
+    return result
 
 
 def run_model(scenario: Scenario):
@@ -168,7 +217,7 @@ def run_model(scenario: Scenario):
     Runs the model by interfacing with the Julia code through PyCall. Model is run on passed scenario.
     Returns model output as tuple of lists: pOC, dOC, inorganic carbon, cell count, time
     """
-    # Run the model trhough PyJulia
+    # Run the model through PyJulia
     P, D, I, N, t = Main.run_model(scenario.get_julia_ordered_paramaters(), scenario.get_julia_ordered_ivp())
 
     result = ModelResult()

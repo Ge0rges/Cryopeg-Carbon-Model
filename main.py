@@ -20,8 +20,9 @@ def log_results(analyses, savelog=True):
     Displays or saves the plots for each analysis done. Prints or save endpoints of model and maintenance energy
     calculations. Saves plots and values to disk if savelog is true.
     """
-    csv_header = ["Analysis title", "Surrounding pOC", "Surrounding dOC", "Brine pOC", "Predicted brine pOC",
-                  "Brine dOC", "Predicted brine dOC", "Present cell density", "Predicted end cell density",
+    csv_header = ["Analysis title", "Surrounding pOC", "Brine pOC", "Predicted brine pOC", "Surrounding dOC",
+                  "Brine dOC", "Predicted brine dOC", "Predicted brine dEPS", "Present cell density",
+                  "Predicted end cell density", "EEA Lower", "EEA Upper", "Real EEA", "EEA predicted timespan",
                   "dOC per cell", "Maintenance energy lower bounds", "Maintenance energy upper bound",
                   "Simulation growth rate", "Minimum growth rate", "Minimum doubling time", "Brine expansion factor"]
     csv_rows = []
@@ -33,21 +34,43 @@ def log_results(analyses, savelog=True):
 
         # Endpoints and ME values
         values = [analysis.title,
+                  # POC
                   np.format_float_scientific(analysis.scenario.start_poc, precision=2),
-                  np.format_float_scientific(analysis.scenario.start_doc, precision=2),
                   np.format_float_scientific(analysis.scenario.end_poc, precision=2),
                   np.format_float_scientific(analysis.model_result.pOC[-1], precision=2),
+
+                  # DOC
+                  np.format_float_scientific(analysis.scenario.start_doc, precision=2),
                   np.format_float_scientific(analysis.scenario.end_doc, precision=2),
                   np.format_float_scientific(analysis.model_result.dOC[-1], precision=2),
+
+                  # EPS
+                  np.format_float_scientific(analysis.end_eps, precision=2),
+
+                  # Cell density
                   np.format_float_scientific(analysis.scenario.observed_end_cell_density, precision=2),
                   np.format_float_scientific(analysis.model_result.cells[-1], precision=2),
+
+                  # EEA
+                  np.format_float_scientific(analysis.eea_estimation.eea_lower, precision=2),
+                  np.format_float_scientific(analysis.eea_estimation.eea_upper, precision=2),
+                  np.format_float_scientific(analysis.scenario._eea_rate, precision=2),
+                  np.format_float_scientific(analysis.eea_estimation.predicted_timespan/365.25, precision=2),
+
+                  # Cell carbon content
                   np.format_float_scientific(analysis.scenario.dissolved_organic_carbon_per_cell, precision=2),
+
+                  # Maintenance energy
                   np.format_float_scientific(analysis.maintenance_energy_result.lower_bound_me, precision=4),
                   np.format_float_scientific(analysis.maintenance_energy_result.upper_bound_me, precision=4),
+
+                  # Growth rate
                   np.format_float_scientific(analysis.scenario._growth_rate, precision=4),
                   np.format_float_scientific(analysis.maintenance_energy_result.minimum_growth_rate, precision=4),
-                  analysis.maintenance_energy_result.minimum_doubling_time / 365.25,
-                  "{:.2f}%".format(analysis.expansion_result.ratio_dimensions)]
+                  np.format_float_scientific(analysis.maintenance_energy_result.minimum_doubling_time / 365.25, precision=2),
+
+                  # Brine expansion
+                  np.format_float_scientific(analysis.expansion_result.ratio_dimensions, precision=2)]
 
         # Save plots and write values to CSV
         if savelog:
@@ -92,11 +115,15 @@ if __name__ == "__main__":  # Generates all figures and data points.
     all_analyses = []
 
     # On every scenario, try every analysis configuration. Run a sensitivity analysis only on the first one.
+    do_SA = True
     for scenario in scenarios:
         for use_minimum_growth_rate in [True, False]:
             for use_me_lower_bound in [True, False]:
                 a = Analysis(scenario, use_minimum_growth_rate, use_me_lower_bound)
-                a.run_analysis(use_minimum_growth_rate & use_me_lower_bound)  # Run SA on first config pair only.
+
+                # Run SA on first config pair only, first scenario.
+                a.run_analysis(do_sensitivity_analysis=do_SA)
+                do_SA = False
 
                 all_analyses.append(a)
 
