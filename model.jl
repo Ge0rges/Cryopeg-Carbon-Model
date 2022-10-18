@@ -60,7 +60,7 @@ end
 
 
 # Runs the sensitivity analysis using Sobol method.
-function run_sensitivity_analysis(p, p_bounds, u0)
+function run_sensitivity_analysis(p_bounds, u0)
     u0 = convert(Array{Float64}, u0)
 
     p_bounds = [p_bounds[i, :] for i in 1:size(p_bounds, 1)]
