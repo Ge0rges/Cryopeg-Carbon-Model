@@ -60,7 +60,7 @@ end
 
 
 # Runs the sensitivity analysis using Sobol method.
-function run_sensitivity_analysis(p_bounds, u0)
+function run_sensitivity_analysis(p_bounds, u0, carbon_output)
     u0 = convert(Array{Float64}, u0)
 
     p_bounds = [p_bounds[i, :] for i in 1:size(p_bounds, 1)]
@@ -68,11 +68,23 @@ function run_sensitivity_analysis(p_bounds, u0)
     # Define a function that remakes the problem and gets its result
     f1 = function (p)
         sol = solve_model(p, u0)
-        [last(sol[1,:] * 1e200)]  # This hacky solution to handle tiny (10^-300) values sucks.
+
+        min = 1e-400
+        max = 1e15
+        x = sol[:, end]
+        normalized = (x.-min./(max-min))
+
+        sol[:, end]
+#
+#         if carbon_output
+#             [last(sol[1, 1:3])]  # This hacky solution to handle tiny (10^-300) values sucks.
+#         else
+#             [last(sol[1, 4])]  # This hacky solution to handle tiny (10^-300) values sucks.
+#         end
     end
 
     # Run GSA
-    sobol_result = GlobalSensitivity.gsa(f1, Sobol(), p_bounds, Ei_estimator=:Sobol2007, samples=2^2)
+    sobol_result = GlobalSensitivity.gsa(f1, eFAST(), p_bounds, samples=2^10)
     return (sobol_result.ST[1,:], sobol_result.S1[1,:])
 end
 

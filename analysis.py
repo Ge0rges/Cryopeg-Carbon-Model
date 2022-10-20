@@ -247,7 +247,7 @@ def run_sensitivity_analysis(scenario: Scenario):
             p_bounds[i] = [p[i], p[i]]
 
     # Run the sensitivity analysis
-    ST, S1 = Main.run_sensitivity_analysis(p_bounds, scenario.get_julia_ordered_ivp())
+    ST, S1 = Main.run_sensitivity_analysis(p_bounds, scenario.get_julia_ordered_ivp(), False)
 
     result = SensitivityResult()
     result.total_sobol_indices = ST
