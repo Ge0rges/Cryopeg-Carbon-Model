@@ -178,28 +178,34 @@ def estimate_eea_rate(scenario: Scenario):
     """
     Estimates the extracellular enzyme activity rate for the total amount of POC converted to DOC in a given timeframe.
     """
-    total_poc_added = scenario._timespan * scenario._particulate_organic_carbon_input_rate
-
-    for p_add in scenario.punctual_organic_carbon_addition:
-        total_poc_added += p_add[1][0]
-
-    poc_converted = (scenario.start_poc + total_poc_added) - scenario.end_poc
 
     start_cell = scenario._start_cell
     end_cell = scenario.observed_end_cell_density
     timespan = scenario._timespan
 
+    # Get total amount of POC added
+    total_poc_added = scenario._timespan * scenario._particulate_organic_carbon_input_rate
+
+    for p_add in scenario.punctual_organic_carbon_addition:
+        total_poc_added += p_add[1][0]
+
+    # Get total amount of POC converted to DOC
+    poc_converted = (scenario.start_poc + total_poc_added) - scenario.end_poc
+
+    # Build growth curve for integral
     # log(N_f/N_0) = μ*(tf-t0) where μ is growth rate
     N0, mu, t, p = symbols("N_0 mu t p", real=True)  # t is time elapsed
 
     mu = np.log(scenario.observed_end_cell_density / start_cell) / timespan  # /days
 
     N0 = start_cell
-    N = exp(mu * t + log(N0))
+    N = exp(mu * t + log(N0))  # Cell growth function
 
+    # Calculate EEA bounds considering two growth cases, as in maintenance energy.
     eea_upper = poc_converted/integrate(N, (t, 0, timespan))
     eea_lower = poc_converted/(end_cell * timespan)
 
+    # Calculate the timespan the EEA rate in-use
     eq = Eq(integrate(N, (t, 0, p)), poc_converted/scenario._eea_rate)
 
     predicted_timespan = solveset(eq, p, domain=Reals)

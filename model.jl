@@ -65,22 +65,10 @@ function run_sensitivity_analysis(p_bounds, u0, carbon_output)
 
     p_bounds = [p_bounds[i, :] for i in 1:size(p_bounds, 1)]
 
-    # Define a function that remakes the problem and gets its result
+    # Define a function that remakes the problem and gets its result. Called for each sample.
     f1 = function (p)
         sol = solve_model(p, u0)
-
-        min = 1e-400
-        max = 1e15
-        x = sol[:, end]
-        normalized = (x.-min./(max-min))
-
         sol[:, end]
-#
-#         if carbon_output
-#             [last(sol[1, 1:3])]  # This hacky solution to handle tiny (10^-300) values sucks.
-#         else
-#             [last(sol[1, 4])]  # This hacky solution to handle tiny (10^-300) values sucks.
-#         end
     end
 
     # Run GSA
@@ -131,12 +119,10 @@ function model(du,u,p,t)
     fixed_carbon = inorganic_carbon_fixing_rate * inorganic_carbon_content
 
     # Particulate Organic carbon
-    du[1] = pOC_input_rate - eea_rate*pOC_content*cell_count
-    # Do i need to multiply the rate by t?
-    #TODO
+    du[1] = pOC_input_rate - eea_rate*cell_count
 
     # Dissolved Organic carbon
-    du[2] = dOC_input_rate + dOC_per_cell * (deaths - growth) - dOC_consumption + eea_rate*pOC_content*cell_count + fixed_carbon
+    du[2] = dOC_input_rate + dOC_per_cell * (deaths - growth) - dOC_consumption + eea_rate*cell_count + fixed_carbon
 
     # Inorganic carbon
     du[3] = inorganic_carbon_input_rate + inorganic_carbon_per_cell * (deaths - growth) + required_dOC - fixed_carbon
