@@ -14,12 +14,12 @@ matplotlib.use('TkAgg')
 def plot_model(analysis: Analysis):
     """
     Plots the result of a model iteration: inorganic and organic carbon overlayed, and cell density seperately
-    in one figure. Gives the figure a title and returns it.
+    in one figure. Returns a figure.
     """
 
     fig, axs = plt.subplots(1, 2, constrained_layout=True, dpi=500)
 
-    fig.suptitle(analysis.title, fontsize="x-large", fontweight="medium")
+    #fig.suptitle(analysis.title, fontsize="x-large", fontweight="medium")
 
     t = analysis.model_result.t
 
@@ -50,7 +50,7 @@ def plot_multiple_scenarios(analyses: [Analysis], colors, line_styles):
     """
     Plots the results of many model outputs in one figure. In one figure, creates three subplots.
     Each subplot is an overlay of organic carbon, inorganic carbon, and cell densities, from each result.
-    labels the figure, customizable color and line style for each result set. Returns the figure.
+    Customizable color and line style for each result set. Returns a figure.
     """
     P_array = [analysis.model_result.pOC for analysis in analyses]
     D_array = [analysis.model_result.dOC for analysis in analyses]
@@ -63,7 +63,7 @@ def plot_multiple_scenarios(analyses: [Analysis], colors, line_styles):
 
     fig, axs = plt.subplots(1, 4, dpi=500, figsize=(20, 10))
 
-    fig.suptitle("Model outputs of all considered scenarios", fontsize="xx-large", fontweight="medium")
+    #fig.suptitle("Model outputs of all considered scenarios", fontsize="xx-large", fontweight="medium")
 
     # Particulate organic carbon plot
     for label, P, t in zip(labels, P_array, t_array):  #, colors, line_styles):
@@ -117,7 +117,7 @@ def hypothetical_growth_scenarios():
 
     fig, axis = plt.subplots(1, 1, tight_layout=True, dpi=500)
 
-    fig.suptitle("Hypothetical growth scenarios", fontsize="x-large", fontweight="medium")
+    #fig.suptitle("Hypothetical growth scenarios", fontsize="x-large", fontweight="medium")
 
     x = np.linspace(0, 40000, num=4000000)
 
@@ -144,7 +144,7 @@ def hypothetical_growth_scenarios():
 def plot_sensitivity(analysis: Analysis):
     """
     Plots the results of a sensitivity analysis as a bar growth per variable. Includes both total and first order
-    Sobol indices. Titles the figure and returns it.
+    Sobol indices. Returns a figure.
     """
 
     # Check there are results
@@ -184,7 +184,7 @@ def plot_sensitivity(analysis: Analysis):
     axs.set_xlabel('Organism parameter', fontsize=12)
     axs.set_ylabel("Sobol Index", fontsize=12)
     axs.set_xticks([r + barWidth for r in range(len(ST))], p_names)
-    axs.set_title("Sensitivity analysis of organism parameters - " + analysis.scenario.title + " scenario")
+    #axs.set_title("Sensitivity analysis of organism parameters - " + analysis.scenario.title + " scenario")
 
     axs.legend(loc=0)
 
