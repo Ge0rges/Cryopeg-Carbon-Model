@@ -5,6 +5,7 @@ Contains the functions that plot various results using matplotlib.
 import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
+from cycler import cycler
 
 from analysis import Analysis
 
@@ -46,11 +47,11 @@ def plot_model(analysis: Analysis):
     return fig
 
 
-def plot_multiple_scenarios(analyses: [Analysis], colors, line_styles):
+def plot_multiple_scenarios(analyses: [Analysis]):
     """
     Plots the results of many model outputs in one figure. In one figure, creates three subplots.
     Each subplot is an overlay of organic carbon, inorganic carbon, and cell densities, from each result.
-    Customizable color and line style for each result set. Returns a figure.
+    Returns a figure.
     """
     P_array = [analysis.model_result.pOC for analysis in analyses]
     D_array = [analysis.model_result.dOC for analysis in analyses]
@@ -65,9 +66,13 @@ def plot_multiple_scenarios(analyses: [Analysis], colors, line_styles):
 
     #fig.suptitle("Model outputs of all considered scenarios", fontsize="xx-large", fontweight="medium")
 
+    cmap = plt.cm.get_cmap("Paired")
+    for i in range(len(axs)):
+        axs[i].set_prop_cycle(cycler('color', cmap(np.linspace(0, 1, len(P_array)))))
+
     # Particulate organic carbon plot
-    for label, P, t in zip(labels, P_array, t_array):  #, colors, line_styles):
-        axs[0].loglog(t / 365, P, label=label, linewidth=2.5)  # color=color, linestyle=style)
+    for label, P, t in zip(labels, P_array, t_array):
+        axs[0].loglog(t / 365, P, label=label, linewidth=2.5)
 
     axs[0].set_ylim([0.01, 10**14])
     axs[0].set_xlim([0.01, 10**5])
@@ -76,8 +81,8 @@ def plot_multiple_scenarios(analyses: [Analysis], colors, line_styles):
     axs[0].set_title('Particulate organic carbon over time')
 
     # Dissolved organic carbon plot
-    for label, D, t in zip(labels, D_array, t_array):  #, colors, line_styles):
-        axs[1].loglog(t / 365, D, label=label, linewidth=2.5)  #, color=color,linestyle=style)
+    for label, D, t in zip(labels, D_array, t_array):
+        axs[1].loglog(t / 365, D, label=label, linewidth=2.5)
 
     axs[1].set_ylim([0.01, 10**14])
     axs[1].set_xlim([0.01, 10**5])
@@ -86,8 +91,8 @@ def plot_multiple_scenarios(analyses: [Analysis], colors, line_styles):
     axs[1].set_title('Dissolved organic carbon over time')
 
     # Inorganic carbon plot
-    for label, I, t in zip(labels, I_array, t_array):  #, colors, line_styles):
-        axs[2].loglog(t / 365, I, label=label, linewidth=2.5)  #, color=color, linestyle=style)
+    for label, I, t in zip(labels, I_array, t_array):
+        axs[2].loglog(t / 365, I, label=label, linewidth=2.5)
 
     axs[2].set_ylim([0.01, 10**14])
     axs[2].set_xlim([0.01, 10**5])
@@ -96,8 +101,8 @@ def plot_multiple_scenarios(analyses: [Analysis], colors, line_styles):
     axs[2].set_title('Inorganic carbon over time')
 
     # Cell count plot
-    for label, N, t in zip(labels, N_array, t_array):  #, colors, line_styles):
-        axs[3].loglog(t / 365, N, label=label, linewidth=2.5)  #, color=color,linestyle=style)
+    for label, N, t in zip(labels, N_array, t_array):
+        axs[3].loglog(t / 365, N, label=label, linewidth=2.5)
 
     axs[3].set_ylim([1, 10**10])
     axs[3].set_xlim([0.01, 10**5])
