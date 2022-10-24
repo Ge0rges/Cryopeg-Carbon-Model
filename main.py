@@ -96,9 +96,7 @@ def log_results(analyses, savelog=True):
             write.writerows(csv_rows)
 
     # Make collective plot
-    colors = None  # ["blue", "orange", "red"]
-    line_styles = None  # ["solid", "dashed", "dotted"]
-    scenarios_fig = plot_multiple_scenarios(analyses, colors, line_styles)
+    scenarios_fig = plot_multiple_scenarios(analyses)
 
     if savelog:  # Plots folder must exist in same directory as main.py
         scenarios_fig.savefig("Plots/all_scenarios_model.pdf", format="pdf", dpi=500, bbox_inches='tight')
