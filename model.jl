@@ -10,6 +10,7 @@ function is_invalid_domain(u,p,t)
     return u[1] < 0 || u[2] < 0 || u[3] < 0 || u[4] < 0
 end
 
+
 # Defines a problem object and solves it.
 function solve_model(p, u0)
     # Set the time timespan
@@ -117,6 +118,9 @@ function model(du,u,p,t)
     ## CARBON
     dOC_consumption = required_dOC_per_cell * (cell_count - deaths)
     fixed_carbon = inorganic_carbon_fixing_rate * inorganic_carbon_content
+
+    ## EEA Rate approaches 0 as POC goes to 0 using a sigmoid function
+    eea_rate = eea_rate * (1 / (1 + exp(-pOC_content))) * 2 - eea_rate
 
     # Particulate Organic carbon
     du[1] = pOC_input_rate - eea_rate*cell_count
