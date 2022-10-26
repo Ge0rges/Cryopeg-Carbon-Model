@@ -13,9 +13,6 @@ end
 
 # Defines a problem object and solves it.
 function solve_model(p, u0)
-    # Set the time timespan
-    tspan = (0.0, last(u0))
-
     # Build a callback to introduce a carbon addition as it is a discontinuity
     stops = []
     carbon = []
@@ -25,9 +22,11 @@ function solve_model(p, u0)
         push!(carbon, (convert(Float64, pOC_to_add), convert(Float64, dOC_to_add)))
     end
 
-    additions = Dict(Pair.(stops, carbon))
+    # Convert p and remove puncutal_punctual_organic_carbon_addition
+    p = convert(Array{Float64}, p[1:end-1])
 
-    addition_condition(u,t,integrator) = any(x->t==x, stops)  # If we hit any of the stops return true
+    # Callback for punctual addition - causes a discontinuity
+    additions = Dict(Pair.(stops, carbon))
     function addition!(integrator)
         integrator.u[1] += additions[integrator.t][1]
         integrator.u[2] += additions[integrator.t][2]
@@ -36,14 +35,20 @@ function solve_model(p, u0)
             integrator.u[3] = 1  # Add a viable cell if none exist
         end
     end
-    carbon_add_cb = DiscreteCallback(addition_condition, addition!)
+    carbon_add_cb = PresetTimeCallback(stops, addition!)
 
-    # Convert p and remove puncutal_punctual_organic_carbon_addition
-    p = convert(Array{Float64}, p[1:end-1])
+    # Callback for the max() function in the model - causes a discontinuity.
+    # If max equation changes, this condition will have to change.
+    condition(u, t, integrator) = p[2] * u[4] - u[2]
+    affect!(integrator) = nothing
+    max_cb = ContinuousCallback(condition, affect!, save_positions=(false,false))
+
+    # Callback list
+    cbs = CallbackSet(carbon_add_cb, max_cb)
 
     # Build the ODE Problem and Solve
-    prob = ODEProblem(model, u0[1:end-1], tspan, p)
-    sol = solve(prob, Rosenbrock23(), callback=carbon_add_cb, tstops=stops, isoutofdomain=is_invalid_domain, maxiters=1e7)
+    prob = ODEProblem(model, u0[1:end-1], (0.0, last(u0)), p)
+    sol = solve(prob, Rosenbrock23(), callback=cbs, tstops=stops, isoutofdomain=is_invalid_domain, maxiters=1e7)
 
     return sol
 end
@@ -92,7 +97,7 @@ function model(du,u,p,t)
     inorganic_carbon_fixing_rate = p[8]
     inorganic_carbon_per_cell = p[9]
     eea_rate = p[10]
-    Ks = p[11]
+    Kd = p[11]
 
     # Load state conditions
     pOC_content = u[1]
@@ -102,7 +107,7 @@ function model(du,u,p,t)
 
     ## CELL COUNT
     # Growth
-    growth = mu_max * (dOC_content / (Ks + dOC_content)) * cell_count * (1 - cell_count / carrying_capacity)
+    growth = mu_max * (dOC_content / (Kd + dOC_content)) * cell_count * (1 - cell_count / carrying_capacity)
 
     # Organic carbon requirement
     required_dOC_per_cell = maintenance_per_cell
@@ -110,9 +115,10 @@ function model(du,u,p,t)
 
     # Starvation Deaths
     dOC_missing = max(required_dOC - dOC_content, 0)
-    starvation_deaths = dOC_missing == 0 ? 0 : dOC_missing / required_dOC_per_cell
+    starvation_deaths = dOC_missing / required_dOC_per_cell
 
     # Total Deaths
+
     deaths =  starvation_deaths
 
     ## CARBON
