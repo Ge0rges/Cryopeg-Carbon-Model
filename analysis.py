@@ -154,27 +154,6 @@ def estimate_me_bounds(scenario: Scenario):
     return result
 
 
-def estimate_end_eps(analysis: Analysis):
-    """
-    Estimates total EPS produced by the system given a model's cell over time result.
-    """
-    assert analysis.model_result
-
-    eps_rate = 0.337712  # fg C/cell day From Stoderegger and Herndl, 1998 (7.1 amol C/cell hr). Applied Q10 (f=2), 20C.
-
-    cells = analysis.model_result.cells
-    timepoints = analysis.model_result.t
-
-    total_eps = 0
-
-    for i, cell_count in enumerate(cells):
-        if i < len(cells) - 1 and cell_count >= 1:
-            delta_t = timepoints[i+1] - timepoints[i]
-            total_eps += delta_t*eps_rate*cell_count
-
-    return total_eps
-
-
 def estimate_eea_rate(scenario: Scenario):
     """
     Estimates the extracellular enzyme activity rate for the total amount of POC converted to DOC in a given timeframe.
