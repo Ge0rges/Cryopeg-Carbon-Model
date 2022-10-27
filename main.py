@@ -95,7 +95,7 @@ def log_results(analyses, savelog=True):
 
     # Write the values to CSV if required
     if savelog:
-        with open('Plots/values.csv', 'w') as f:
+        with open('Plots/values.csv', 'w+') as f:
             write = csv.writer(f)
             write.writerow(csv_header)
             write.writerows(csv_rows)
