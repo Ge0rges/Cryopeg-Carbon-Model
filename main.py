@@ -10,6 +10,7 @@ Call run_all_analysis() with custom paramaters to create your own scenario.
 """
 
 import csv
+import os
 
 from scenario import *
 from plots import *
@@ -74,6 +75,8 @@ def log_results(analyses, savelog=True):
 
         # Save plots and write values to CSV
         if savelog:
+            os.mkdir('Plots/')  # Make a plots folder is it doesn't exist
+
             model_fig.savefig("Plots/" + analysis.title + "_model.pdf", format="pdf", dpi=500, bbox_inches='tight')
             csv_rows.append(values)
 
