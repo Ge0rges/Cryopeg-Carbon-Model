@@ -49,8 +49,8 @@ class Scenario:
     # _Kd: fg C - The organic carbon concentration at which u = 1/2 u0.
     _Kd = 8.82 * 10 ** 5  # average Ks ug AA/L = 2.152 (Yager & Deming 1999) * DCAA are 41% carbon (Rowe & Deming 1985)
 
-    _paramater_bounds = [[10**-14, 10**5], [0.01, 500], [1, 500], None, None,  # Ordered bounds for sensitivty analysis
-                         None, None, None, None, [10**-8, 100], [1e-10, 1e10], None]  # as in julia p list.
+    _paramater_bounds = [[10**-6, 10**5], [1e-5, 500], [1, 500], None, None,  # Ordered bounds for sensitivty analysis
+                         None, None, None, None, [0, 100], [1e3, 1e10], None]  # as in julia p list.
     _paramater_names = ["Growth rate", "Maintenance energy", "dOC/cell", "Carrying capacity", "pOC input rate",
                         "dOC input rate", "Inorganic carbon input rate", "Inorganic carbon fixation rate", "IC/cell",
                         "EEA rate", "Kd", "Punctual organic carbon addition"]

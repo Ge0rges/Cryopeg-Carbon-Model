@@ -116,14 +116,14 @@ if __name__ == "__main__":  # Generates all figures and data points.
     do_SA = True
     for scenario in scenarios:
         for use_minimum_growth_rate in [True, False]:
-            for use_me_lower_bound in [True, False]:
-                a = Analysis(scenario, use_minimum_growth_rate, use_me_lower_bound)
+            use_me_lower_bound = not use_minimum_growth_rate
+            a = Analysis(scenario, use_minimum_growth_rate, use_me_lower_bound)
 
-                # Run SA on first config pair only, first scenario.
-                a.run_analysis(do_sensitivity_analysis=do_SA)
-                do_SA = False
+            # Run SA on first config pair only, first scenario.
+            a.run_analysis(do_sensitivity_analysis=do_SA)
+            do_SA = False
 
-                all_analyses.append(a)
+            all_analyses.append(a)
 
     # Save plots and values of all results.
     log_results(all_analyses, savelog=True)
