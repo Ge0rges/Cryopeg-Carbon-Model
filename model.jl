@@ -48,7 +48,7 @@ function solve_model(p, u0)
 
     # Build the ODE Problem and Solve
     prob = ODEProblem(model, u0[1:end-1], (0.0, last(u0)), p)
-    sol = solve(prob, Rosenbrock23(), callback=cbs, tstops=stops, isoutofdomain=is_invalid_domain, maxiters=1e8)
+    sol = solve(prob, Rosenbrock23(), callback=cbs, tstops=stops, isoutofdomain=is_invalid_domain, maxiters=4*1e7)
 
     return sol
 end
@@ -118,7 +118,6 @@ function model(du,u,p,t)
     starvation_deaths = dOC_missing / required_dOC_per_cell
 
     # Total Deaths
-
     deaths =  starvation_deaths
 
     ## CARBON

@@ -118,7 +118,7 @@ if __name__ == "__main__":  # Generates all figures and data points.
     all_analyses = []
 
     # On every scenario, try every analysis configuration. Run a sensitivity analysis only on the first one.
-    do_SA = True
+    do_SA = False
     for scenario in scenarios:
         for use_minimum_growth_rate in [True, False]:
             use_me_lower_bound = not use_minimum_growth_rate

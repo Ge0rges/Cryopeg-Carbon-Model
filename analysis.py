@@ -85,6 +85,7 @@ class Analysis:
         self.scenario.maintenance_per_cell = self.maintenance_energy_result.lower_bound_me if self._use_me_lower_bound else self.maintenance_energy_result.upper_bound_me
 
         # Run the model through PyJulia using the lower ME
+        print(self.title)
         self.model_result = run_model(self.scenario)
 
         # Calculate brine expansion
