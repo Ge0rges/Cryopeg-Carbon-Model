@@ -5,11 +5,6 @@ using GlobalSensitivity
 using Statistics
 using Printf
 
-# Define model domain. Reject any values below 0.
-function is_invalid_domain(u,p,t)
-    return u[1] < 0 || u[2] < 0 || u[3] < 0 || u[4] < 0
-end
-
 
 # Defines a problem object and solves it.
 function solve_model(p, u0)
@@ -39,17 +34,31 @@ function solve_model(p, u0)
 
     # Callback for the max() function in the model - causes a discontinuity.
     # If max equation changes, this condition will have to change.
-    condition(u, t, integrator) = p[2] * u[4] - u[2]
-    affect!(integrator) = nothing
-    max_cb = ContinuousCallback(condition, affect!, save_positions=(false,false))
+    max_condition(u, t, integrator) = p[2] * u[4] - u[2]
+    do_nothing(integrator) = nothing
+    max_cb = ContinuousCallback(max_condition, do_nothing)
+
+    # Set things to 0 if they are less than 1e-100
+    zero_condition(u, t, integrator) = u[1] < 1e-100 || u[2] < 1e-100 || u[3] < 1e-100 || u[4] < 1e-100
+    function zero_out!(integrator)
+        for i in 1:4
+            if integrator.u[i] < 1e-100
+                integrator.u[i] = 0
+            end
+        end
+    end
+    zero_cb = DiscreteCallback(zero_condition, zero_out!)
+
+    # Out of domain function
+    is_invalid_domain(u,p,t) = u[1] < 0 || u[2] < 0 || u[3] < 0 || u[4] < 0
 
     # Callback list
-    cbs = CallbackSet(carbon_add_cb, max_cb)
+    cbs = CallbackSet(carbon_add_cb, max_cb, zero_cb)
 
     # Build the ODE Problem and Solve
     prob = ODEProblem(model, u0[1:end-1], (0.0, last(u0)), p)
-    sol = solve(prob, Rosenbrock23(), callback=cbs, tstops=stops, isoutofdomain=is_invalid_domain, maxiters=4*1e7)
 
+    sol = solve(prob, Rosenbrock23(), callback=cbs, tstops=stops, isoutofdomain=is_invalid_domain, maxiters=1e6)
     return sol
 end
 
