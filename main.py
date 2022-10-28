@@ -45,9 +45,6 @@ def log_results(analyses, savelog=True):
                   np.format_float_scientific(analysis.scenario.end_doc, precision=2),
                   np.format_float_scientific(analysis.model_result.dOC[-1], precision=2),
 
-                  # EPS
-                  np.format_float_scientific(analysis.end_eps, precision=2),
-
                   # Cell density
                   np.format_float_scientific(analysis.scenario.observed_end_cell_density, precision=2),
                   np.format_float_scientific(analysis.model_result.cells[-1], precision=2),

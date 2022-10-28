@@ -46,7 +46,6 @@ class Analysis:
     sensitivity_analysis_result: SensitivityResult = None
     model_result: ModelResult = None
     expansion_result: ExpansionResult = None
-    end_eps: float = None
     eea_estimation: EEAResult = None
 
     title = None
@@ -94,9 +93,6 @@ class Analysis:
 
         # Run the sensitivity analysis
         self.sensitivity_analysis_result = run_sensitivity_analysis(self.scenario) if do_sensitivity_analysis else None
-
-        # Calculate eps produced
-        self.end_eps = estimate_end_eps(self)
 
         # Calculate EEA rate bounds
         self.eea_estimation = estimate_eea_rate(self.scenario)
