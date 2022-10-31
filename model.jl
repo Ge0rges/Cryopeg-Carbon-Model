@@ -88,7 +88,7 @@ function run_sensitivity_analysis(p_bounds, u0, carbon_output)
     end
 
     # Run GSA
-    sobol_result = GlobalSensitivity.gsa(f1, eFAST(), p_bounds, samples=2^10)
+    sobol_result = GlobalSensitivity.gsa(f1, eFAST(), p_bounds, samples=200)
     return (sobol_result.ST[1,:], sobol_result.S1[1,:])
 end
 
@@ -135,13 +135,13 @@ function model(du,u,p,t)
     fixed_carbon = inorganic_carbon_fixing_rate * inorganic_carbon_content
 
     # EEA rate
-    eea_rate = min(eea_rate*cell_count, pOC_content)
+    eea_removal = min(eea_rate*cell_count, pOC_content)
 
     # Particulate Organic carbon
-    du[1] = pOC_input_rate - eea_rate*cell_count
+    du[1] = pOC_input_rate - eea_removal
 
     # Dissolved Organic carbon
-    du[2] = dOC_input_rate + dOC_per_cell * (deaths - growth) - dOC_consumption + eea_rate*cell_count + fixed_carbon
+    du[2] = dOC_input_rate + dOC_per_cell * (deaths - growth) - dOC_consumption + eea_removal + fixed_carbon
 
     # Inorganic carbon
     du[3] = inorganic_carbon_input_rate + inorganic_carbon_per_cell * (deaths - growth) + required_dOC - fixed_carbon
