@@ -9,7 +9,7 @@ Kannan et al. _In prep._
 2. Install [Python](https://www.python.org/downloads/), guarranteed to compile on Python 3.9
 3. Create a Python virtual environment [How-to](https://docs.python.org/3/library/venv.html)
 4. Install the requirements in your venv `pip install -r requirements.txt`
-5. Launch Julia in the terminal and do `using Pkg; Pkg.add(["DifferentialEquations", "DiffEqSensitivity", "ForwardDiff", "GlobalSensitivity"])
+5. Launch Julia in the terminal and do `using Pkg; Pkg.add(["DifferentialEquations", "DiffEqSensitivity", "ForwardDiff", "GlobalSensitivity", "QuasiMonteCarlo"])`
 6. Run main.py to reproduce presented analyses.
 
 ## Documentation
@@ -28,7 +28,7 @@ The main file and `plots.py` both participate in figure generation and value log
 
 `utils.py` contains miscellaneous classes and functions.
 
-I will not that since passing objects between Python and Julia is not nice, model paramters are passed as *ordered arrays*. If you decide to extend or modify this code you must *ensure this order is respected* across Julia and Python code. The class structures were designed to maximize encapsulation and minimize the number of places modification would have to be carried over.
+I will note that since passing objects between Python and Julia is not nice, model paramters are passed as *ordered arrays*. If you decide to extend or modify this code you must *ensure this order is respected* across Julia and Python code. The class structures were designed to maximize encapsulation and minimize the number of places modification would have to be carried over.
 
 ## Issues & Contribution
 Should you have any questions or suggestions, please open an issue on this repository. 
