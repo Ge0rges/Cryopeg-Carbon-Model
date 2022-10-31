@@ -17,8 +17,9 @@ function solve_model(p, u0)
         push!(carbon, (convert(Float64, pOC_to_add), convert(Float64, dOC_to_add)))
     end
 
-    # Convert p and remove puncutal_punctual_organic_carbon_addition
+    # Convert p and u0, and remove puncutal_punctual_organic_carbon_addition from p
     p = convert(Array{Float64}, p[1:end-1])
+    u0 = convert(Array{Float64}, u0)
 
     # Callback for punctual addition - causes a discontinuity
     additions = Dict(Pair.(stops, carbon))
@@ -69,8 +70,6 @@ end
 
 # Runs the model using solve_model and packages results nicely.
 function run_model(p, u0)
-    u0 = convert(Array{Float64}, u0)
-
     sol = solve_model(p, u0)
 
     # Return the solution array - [pOC, dOC, IC, Cells, t]
@@ -80,8 +79,6 @@ end
 
 # Runs the sensitivity analysis using Sobol method.
 function run_sensitivity_analysis(p_bounds, u0, carbon_output)
-    u0 = convert(Array{Float64}, u0)
-
     p_bounds = [p_bounds[i, :] for i in 1:size(p_bounds, 1)]
 
     # Define a function that remakes the problem and gets its result. Called for each sample.
