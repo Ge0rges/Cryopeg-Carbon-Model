@@ -22,7 +22,7 @@ def log_results(analyses, savelog=True):
     calculations. Saves plots and values to disk if savelog is true.
     """
     csv_header = ["Analysis title", "Surrounding pOC", "Brine pOC", "Predicted brine pOC", "Surrounding dOC",
-                  "Brine dOC", "Predicted brine dOC", "Predicted brine dEPS", "Present cell density",
+                  "Brine dOC", "Predicted brine dOC", "Present cell density",
                   "Predicted end cell density", "EEA Lower", "EEA Upper", "Real EEA", "EEA predicted timespan",
                   "dOC per cell", "Maintenance energy lower bounds", "Maintenance energy upper bound",
                   "Simulation growth rate", "Minimum growth rate", "Minimum doubling time", "Brine expansion factor"]
@@ -73,14 +73,14 @@ def log_results(analyses, savelog=True):
         # Save plots and write values to CSV
         if savelog:
             # Make a plots folder is it doesn't exist
-            if not os.path.exists("Plots/"):
-                os.mkdir('Plots/')
+            if not os.path.exists("Results/"):
+                os.mkdir('Results/')
 
-            model_fig.savefig("Plots/" + analysis.title + "_model.pdf", format="pdf", dpi=500, bbox_inches='tight')
+            model_fig.savefig("Results/" + analysis.title + "_model.pdf", format="pdf", dpi=500, bbox_inches='tight')
             csv_rows.append(values)
 
             if sa_fig:
-                sa_fig.savefig("Plots/" + analysis.title + "_sa.pdf", format="pdf", dpi=500, bbox_inches='tight')
+                sa_fig.savefig("Results/" + analysis.title + "_sa.pdf", format="pdf", dpi=500, bbox_inches='tight')
 
         else:
             model_fig.show()
@@ -92,7 +92,7 @@ def log_results(analyses, savelog=True):
 
     # Write the values to CSV if required
     if savelog:
-        with open('Plots/values.csv', 'w+') as f:
+        with open('Results/values.csv', 'w+') as f:
             write = csv.writer(f)
             write.writerow(csv_header)
             write.writerows(csv_rows)
@@ -101,7 +101,7 @@ def log_results(analyses, savelog=True):
     scenarios_fig = plot_multiple_scenarios(analyses)
 
     if savelog:  # Plots folder must exist in same directory as main.py
-        scenarios_fig.savefig("Plots/all_scenarios_model.pdf", format="pdf", dpi=500, bbox_inches='tight')
+        scenarios_fig.savefig("Results/all_scenarios_model.pdf", format="pdf", dpi=500, bbox_inches='tight')
 
     else:  # Show the figures
         scenarios_fig.show()

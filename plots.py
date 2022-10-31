@@ -68,7 +68,7 @@ def plot_multiple_scenarios(analyses: [Analysis]):
 
     cmap = plt.cm.get_cmap("Paired")
     for i in range(len(axs)):
-        axs[i].set_prop_cycle(cycler('color', cmap(np.linspace(0, 1, len(P_array)))))
+        axs[i].set_prop_cycle(cycler('color', cmap.colors) * cycler('linestyle', ['-', '--']))
 
     # Particulate organic carbon plot
     for label, P, t in zip(labels, P_array, t_array):
