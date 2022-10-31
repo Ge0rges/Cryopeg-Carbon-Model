@@ -88,7 +88,7 @@ function run_sensitivity_analysis(p_bounds, u0, carbon_output)
     end
 
     # Run GSA
-    sobol_result = GlobalSensitivity.gsa(f1, eFAST(), p_bounds, samples=200)
+    sobol_result = GlobalSensitivity.gsa(f1, Sobol(), p_bounds, samples=2^14)
     return (sobol_result.ST[1,:], sobol_result.S1[1,:])
 end
 
