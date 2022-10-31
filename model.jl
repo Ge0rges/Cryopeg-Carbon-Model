@@ -38,6 +38,10 @@ function solve_model(p, u0)
     do_nothing(integrator) = nothing
     max_cb = ContinuousCallback(max_condition, do_nothing)
 
+    # Min condition for EEA rate
+    min_condition(u, t, integrator) = p[10] * u[4] - u[1]
+    min_cb = ContinuousCallback(min_condition, do_nothing)
+
     # Set things to 0 if they are less than 1e-100
     zero_condition(u, t, integrator) = u[1] < 1e-100 || u[2] < 1e-100 || u[3] < 1e-100 || u[4] < 1e-100
     function zero_out!(integrator)
@@ -49,14 +53,15 @@ function solve_model(p, u0)
     end
     zero_cb = DiscreteCallback(zero_condition, zero_out!)
 
+    # Callback list
+    cbs = CallbackSet(carbon_add_cb, max_cb, min_cb, zero_cb)
+
     # Out of domain function
     is_invalid_domain(u,p,t) = u[1] < 0 || u[2] < 0 || u[3] < 0 || u[4] < 0
 
-    # Callback list
-    cbs = CallbackSet(carbon_add_cb, max_cb, zero_cb)
-
     # Build the ODE Problem and Solve
     prob = ODEProblem(model, u0[1:end-1], (0.0, last(u0)), p)
+    sol = solve(prob, Rosenbrock23(), callback=cbs, isoutofdomain=is_invalid_domain, maxiters=1e6)
 
     return sol
 end
@@ -132,8 +137,8 @@ function model(du,u,p,t)
     dOC_consumption = required_dOC_per_cell * (cell_count - deaths)
     fixed_carbon = inorganic_carbon_fixing_rate * inorganic_carbon_content
 
-    ## EEA Rate approaches 0 as POC goes to 0 using a sigmoid function
-    eea_rate = eea_rate * (1 / (1 + exp(-pOC_content))) * 2 - eea_rate
+    # EEA rate
+    eea_rate = min(eea_rate*cell_count, pOC_content)
 
     # Particulate Organic carbon
     du[1] = pOC_input_rate - eea_rate*cell_count
