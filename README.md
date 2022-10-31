@@ -28,7 +28,7 @@ The main file and `plots.py` both participate in figure generation and value log
 
 `utils.py` contains miscellaneous classes and functions.
 
-I will not that since passing objects between Python and Julia is not nice, model paramters are passed as *ordered arrays*. If you decide to extend or modify this code you must *ensure this order is respected* across Julia and Python code. The class structures were designed to maximize encapsulation and minimize the number of places modification would have to be carried over.
+I will note that since passing objects between Python and Julia is not nice, model paramters are passed as *ordered arrays*. If you decide to extend or modify this code you must *ensure this order is respected* across Julia and Python code. The class structures were designed to maximize encapsulation and minimize the number of places modification would have to be carried over.
 
 ## Issues & Contribution
 Should you have any questions or suggestions, please open an issue on this repository. 
