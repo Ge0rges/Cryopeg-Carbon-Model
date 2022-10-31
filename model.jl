@@ -35,12 +35,12 @@ function solve_model(p, u0)
 
     # Callback for the max() function in the model - causes a discontinuity.
     # If max equation changes, this condition will have to change.
-    max_condition(u, t, integrator) = p[2] * u[4] - u[2]
+    max_condition(u, t, integrator) = integrator.p[2] * u[4] - u[2]
     do_nothing(integrator) = nothing
     max_cb = ContinuousCallback(max_condition, do_nothing)
 
     # Min condition for EEA rate
-    min_condition(u, t, integrator) = p[10] * u[4] - u[1]
+    min_condition(u, t, integrator) = integrator.p[10] * u[4] - u[1]
     min_cb = ContinuousCallback(min_condition, do_nothing)
 
     # Set things to 0 if they are less than 1e-100
