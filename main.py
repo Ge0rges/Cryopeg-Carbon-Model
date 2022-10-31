@@ -132,4 +132,4 @@ if __name__ == "__main__":  # Generates all figures and data points.
 
     # Generate the hypothetical growth scenarios figure.
     hg_fig = hypothetical_growth_scenarios()
-    hg_fig.savefig("Plots/" + "hypothetical_growth.pdf", format="pdf", dpi=500, bbox_inches='tight')
+    hg_fig.savefig("Results/" + "hypothetical_growth.pdf", format="pdf", dpi=500, bbox_inches='tight')
