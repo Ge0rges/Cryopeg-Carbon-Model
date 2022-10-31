@@ -9,7 +9,7 @@ Kannan et al. _In prep._
 2. Install [Python](https://www.python.org/downloads/), guarranteed to compile on Python 3.9
 3. Create a Python virtual environment [How-to](https://docs.python.org/3/library/venv.html)
 4. Install the requirements in your venv `pip install -r requirements.txt`
-5. Launch Julia in the terminal and do `using Pkg; Pkg.add(["DifferentialEquations", "DiffEqSensitivity", "ForwardDiff", "GlobalSensitivity"])
+5. Launch Julia in the terminal and do `using Pkg; Pkg.add(["DifferentialEquations", "DiffEqSensitivity", "ForwardDiff", "GlobalSensitivity", "QuasiMonteCarlo"])`
 6. Run main.py to reproduce presented analyses.
 
 ## Documentation
