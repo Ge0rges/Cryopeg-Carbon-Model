@@ -6,6 +6,31 @@ using Statistics
 using Printf
 
 
+# Runs the model using solve_model and packages results nicely.
+function run_model(p, u0)
+    sol = solve_model(p, u0)
+
+    # Return the solution array - [pOC, dOC, IC, Cells, t]
+    return [[x[1] for x in sol.u], [x[2] for x in sol.u], [x[3] for x in sol.u], [x[4] for x in sol.u], sol.t]
+end
+
+
+# Runs the sensitivity analysis using Sobol method.
+function run_sensitivity_analysis(p_bounds, u0, carbon_output)
+    p_bounds = [p_bounds[i, :] for i in 1:size(p_bounds, 1)]
+
+    # Define a function that remakes the problem and gets its result. Called for each sample.
+    f1 = function (p)
+        sol = solve_model(p, u0)
+        sol[:, end]
+    end
+
+    # Run GSA
+    sobol_result = GlobalSensitivity.gsa(f1, Sobol(), p_bounds, samples=2^13)
+    return (sobol_result.ST[1,:], sobol_result.S1[1,:])
+end
+
+
 # Defines a problem object and solves it.
 function solve_model(p, u0)
     # Build a callback to introduce a carbon addition as it is a discontinuity
@@ -27,8 +52,8 @@ function solve_model(p, u0)
         integrator.u[1] += additions[integrator.t][1]
         integrator.u[2] += additions[integrator.t][2]
 
-        if integrator.u[3] < 1
-            integrator.u[3] = 1  # Add a viable cell if none exist
+        if integrator.u[4] < 1
+            integrator.u[4] = 1  # Add a viable cell if none exist
         end
     end
     carbon_add_cb = PresetTimeCallback(stops, addition!)
@@ -68,33 +93,8 @@ function solve_model(p, u0)
 end
 
 
-# Runs the model using solve_model and packages results nicely.
-function run_model(p, u0)
-    sol = solve_model(p, u0)
-
-    # Return the solution array - [pOC, dOC, IC, Cells, t]
-    return [[x[1] for x in sol.u], [x[2] for x in sol.u], [x[3] for x in sol.u], [x[4] for x in sol.u], sol.t]
-end
-
-
-# Runs the sensitivity analysis using Sobol method.
-function run_sensitivity_analysis(p_bounds, u0, carbon_output)
-    p_bounds = [p_bounds[i, :] for i in 1:size(p_bounds, 1)]
-
-    # Define a function that remakes the problem and gets its result. Called for each sample.
-    f1 = function (p)
-        sol = solve_model(p, u0)
-        sol[:, end]
-    end
-
-    # Run GSA
-    sobol_result = GlobalSensitivity.gsa(f1, Sobol(), p_bounds, samples=2^14)
-    return (sobol_result.ST[1,:], sobol_result.S1[1,:])
-end
-
-
 # Implements the differential equations that define the model
-function model(du,u,p,t)
+function model(du, u, p, t)
     # Paramaters
     mu_max = p[1]
     maintenance_per_cell = p[2]
@@ -128,7 +128,7 @@ function model(du,u,p,t)
     starvation_deaths = dOC_missing / required_dOC_per_cell
 
     # Total Deaths
-    deaths =  starvation_deaths
+    deaths = starvation_deaths
 
     ## CARBON
     dOC_consumption = required_dOC_per_cell * (cell_count - deaths)

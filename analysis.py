@@ -47,10 +47,11 @@ class Analysis:
     model_result: ModelResult = None
     expansion_result: ExpansionResult = None
     eea_estimation: EEAResult = None
+    growth_yield: float = None
 
     title = None
 
-    def __init__(self, scenario, use_minimum_growth_rate, use_me_lower_bound):
+    def __init__(self, scenario: Scenario, use_minimum_growth_rate: bool, use_me_lower_bound: bool):
         """
         Initiates the analysis and construts its title.
         """
@@ -60,7 +61,7 @@ class Analysis:
 
         # Invalidate any growth rate present, we need to calcualte it
         if self._use_minimum_growth_rate:
-            self.scenario.growth_rate = None
+            self.scenario._growth_rate = None
 
         self.title = self.scenario.title + " - "
         self.title += "minimum growth rate - " if use_minimum_growth_rate else "lab growth rate - "
@@ -69,7 +70,7 @@ class Analysis:
         return
 
 
-    def run_analysis(self, do_sensitivity_analysis):
+    def run_analysis(self, do_sensitivity_analysis: bool):
         """
         Runs all analyses including sensitivity analysis if requested. Configures the scenario's growth rate and
         maintenance energy as required by the analysis. Stores all results in the class.
@@ -96,6 +97,9 @@ class Analysis:
 
         # Calculate EEA rate bounds
         self.eea_estimation = estimate_eea_rate(self.scenario)
+
+        # Calculate the growth yield
+        self.growth_yield = calculate_growth_yield(self.scenario)
 
 
 def estimate_me_bounds(scenario: Scenario):
@@ -194,6 +198,17 @@ def estimate_eea_rate(scenario: Scenario):
     return result
 
 
+def calculate_growth_yield(scenario: Scenario):
+    """
+    Calculates and returns the growth yield of one microbe across a day.
+    """
+
+    biomass_formed = scenario._growth_rate * scenario.dissolved_organic_carbon_per_cell
+    oc_consumed = scenario.maintenance_per_cell + biomass_formed
+
+    return biomass_formed/oc_consumed
+
+
 def run_model(scenario: Scenario):
     """
     Runs the model by interfacing with the Julia code through PyCall. Model is run on passed scenario.
@@ -223,7 +238,7 @@ def run_sensitivity_analysis(scenario: Scenario):
     p = scenario.get_julia_ordered_paramaters()
 
     # Sensitivity analysis
-    # Fix the bounds to replace "None" with no range bounds tha twill yield a 0 sobol index.
+    # Fix the bounds to replace "None" with no range bounds that will yield a 0 sobol index.
     for i, x in enumerate(p_bounds):
         if x is None:
             p_bounds[i] = [p[i], p[i]]

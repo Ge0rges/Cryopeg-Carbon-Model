@@ -52,7 +52,7 @@ class Scenario:
     _paramater_bounds = [[1e-6, 1e2], [1e-5, 500], [1, 500], None, None,  # Ordered bounds for sensitivty analysis
                          None, None, None, None, [0, 100], [1e3, 1e8], None]  # as in julia p list.
 
-    _paramater_names = ["Growth rate", "Maintenance energy", "dOC/cell", "Carrying capacity", "pOC input rate",
+    _paramater_names = ["μ", "Maintenance energy", "dOC/cell", "Carrying capacity", "pOC input rate",
                         "dOC input rate", "Inorganic carbon input rate", "Inorganic carbon fixation rate", "IC/cell",
                         "EEA rate", "Kd", "Punctual organic carbon addition"]
 

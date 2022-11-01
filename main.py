@@ -22,10 +22,10 @@ def log_results(analyses, savelog=True):
     calculations. Saves plots and values to disk if savelog is true.
     """
     csv_header = ["Analysis title", "Surrounding pOC", "Brine pOC", "Predicted brine pOC", "Surrounding dOC",
-                  "Brine dOC", "Predicted brine dOC", "Present cell density",
-                  "Predicted end cell density", "EEA Lower", "EEA Upper", "Real EEA", "EEA predicted timespan",
-                  "dOC per cell", "Maintenance energy lower bounds", "Maintenance energy upper bound",
-                  "Simulation growth rate", "Minimum growth rate", "Minimum doubling time", "Brine expansion factor"]
+                  "Brine dOC", "Predicted brine dOC", "Present cell density", "Predicted end cell density",
+                  "EEA Lower", "EEA Upper", "Real EEA", "EEA predicted timespan", "dOC/cell",
+                  "Maintenance energy lower bounds", "Maintenance energy upper bound", "Simulation growth rate",
+                  "Minimum growth rate", "Minimum doubling time", "Growth yiel d", "Brine expansion factor"]
     csv_rows = []
 
     for analysis in analyses:
@@ -66,6 +66,9 @@ def log_results(analyses, savelog=True):
                   np.format_float_scientific(analysis.scenario._growth_rate, precision=4),
                   np.format_float_scientific(analysis.maintenance_energy_result.minimum_growth_rate, precision=4),
                   np.format_float_scientific(analysis.maintenance_energy_result.minimum_doubling_time / 365.25, precision=2),
+
+                  # Growth yield
+                  np.format_float_scientific(analysis.growth_yield, precision=4),
 
                   # Brine expansion
                   np.format_float_scientific(analysis.expansion_result.ratio_dimensions, precision=2)]
