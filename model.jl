@@ -16,49 +16,66 @@ end
 
 
 # Runs the sensitivity analysis using Sobol method.
-function run_sensitivity_analysis(p_bounds, u0, carbon_output)
+function run_sensitivity_analysis(p_bounds, u0)
     p_bounds = [p_bounds[i, :] for i in 1:size(p_bounds, 1)]
+
+    # If we do this once here, it doesn't have to be done n times in SA calls.
+    u0 = convert(Array{Float64}, u0)
 
     # Define a function that remakes the problem and gets its result. Called for each sample.
     f1 = function (p)
-        sol = solve_model(p, u0)
-        sol[:, end]
+        sol = solve_model(p, u0; sensitivity_analysis=true)
+
+        scaled1 = sol[1, end]/1e14
+        scaled2 = sol[2, end]/1e14
+        scaled3 = sol[3, end]/1e19
+        scaled4 = sol[4, end]/1e9
+        out = [scaled1, scaled2, scaled3, scaled4]
+        if any(x -> !(1 >= x >= 0), out)
+            @show [scaled1, scaled2, scaled3, scaled4]
+        end
+
+        out
     end
 
     # Run GSA
-    sobol_result = GlobalSensitivity.gsa(f1, Sobol(order=[0, 1], nboot=1, conf_level=0.95), p_bounds, samples=2^13)
+    sobol_result = GlobalSensitivity.gsa(f1, Sobol(order=[0, 1], nboot=5, conf_level=0.95), p_bounds, samples=2^20)
 
-    @show sobol_result
+    @show sobol_result.ST_Conf_Int
+    @show sobol_result.S1_Conf_Int
     return (sobol_result.ST[1,:], sobol_result.S1[1,:])
 end
 
 
 # Defines a problem object and solves it.
-function solve_model(p, u0)
+function solve_model(p, u0; sensitivity_analysis=false)
     # Build a callback to introduce a carbon addition as it is a discontinuity
-    stops = []
-    carbon = []
-    punctual_organic_carbon_addition = p[end] == -1 ? [] : p[end]
-    for (time_to_add, (pOC_to_add, dOC_to_add)) in punctual_organic_carbon_addition
-        push!(stops, time_to_add)
-        push!(carbon, (convert(Float64, pOC_to_add), convert(Float64, dOC_to_add)))
-    end
-
-    # Convert p and u0, and remove puncutal_punctual_organic_carbon_addition from p
-    p = convert(Array{Float64}, p[1:end-1])
-    u0 = convert(Array{Float64}, u0)
-
-    # Callback for punctual addition - causes a discontinuity
-    additions = Dict(Pair.(stops, carbon))
-    function addition!(integrator)
-        integrator.u[1] += additions[integrator.t][1]
-        integrator.u[2] += additions[integrator.t][2]
-
-        if integrator.u[4] < 1
-            integrator.u[4] = 1  # Add a viable cell if none exist
+    carbon_add_cb = nothing
+    if !sensitivity_analysis
+        stops = []
+        carbon = []
+        punctual_organic_carbon_addition = p[end] == -1 ? [] : p[end]
+        for (time_to_add, (pOC_to_add, dOC_to_add)) in punctual_organic_carbon_addition
+            push!(stops, time_to_add)
+            push!(carbon, (convert(Float64, pOC_to_add), convert(Float64, dOC_to_add)))
         end
+
+        # Convert p and u0, and remove puncutal_punctual_organic_carbon_addition from p
+        p = convert(Array{Float64}, p[1:end-1])
+        u0 = convert(Array{Float64}, u0)
+
+        # Callback for punctual addition - causes a discontinuity
+        additions = Dict(Pair.(stops, carbon))
+        function addition!(integrator)
+            integrator.u[1] += additions[integrator.t][1]
+            integrator.u[2] += additions[integrator.t][2]
+
+            if integrator.u[4] < 1
+                integrator.u[4] = 1  # Add a viable cell if none exist
+            end
+        end
+        carbon_add_cb = PresetTimeCallback(stops, addition!)
     end
-    carbon_add_cb = PresetTimeCallback(stops, addition!)
 
     # Callback for the max() function in the model - causes a discontinuity.
     # If max equation changes, this condition will have to change.
@@ -71,10 +88,10 @@ function solve_model(p, u0)
     min_cb = ContinuousCallback(min_condition, do_nothing)
 
     # Set things to 0 if they are less than 1e-100
-    zero_condition(u, t, integrator) = u[1] < 1e-100 || u[2] < 1e-100 || u[3] < 1e-100 || u[4] < 1e-100
+    zero_condition(u, t, integrator) = any(x -> x < 1e-20, u)
     function zero_out!(integrator)
         for i in 1:4
-            if integrator.u[i] < 1e-100
+            if integrator.u[i] < 1e-20
                 integrator.u[i] = 0
             end
         end
@@ -82,14 +99,17 @@ function solve_model(p, u0)
     zero_cb = DiscreteCallback(zero_condition, zero_out!)
 
     # Callback list
-    cbs = CallbackSet(carbon_add_cb, max_cb, min_cb, zero_cb)
+    cbs = CallbackSet(carbon_add_cb, max_cb, min_cb, zero_cb, PositiveDomain())
 
     # Out of domain function
-    is_invalid_domain(u,p,t) = u[1] < 0 || u[2] < 0 || u[3] < 0 || u[4] < 0
+#     is_invalid_domain(u, p, t) = any(x -> x < 0, u)
 
     # Build the ODE Problem and Solve
     prob = ODEProblem(model, u0[1:end-1], (0.0, last(u0)), p)
-    sol = solve(prob, Rosenbrock23(), callback=cbs, isoutofdomain=is_invalid_domain, maxiters=1e6)
+
+    save_last = sensitivity_analysis ? last(u0) : []
+    sol = solve(prob, Rosenbrock23(), callback=cbs, maxiters=1e6, saveat=save_last)
+
 
     return sol
 end

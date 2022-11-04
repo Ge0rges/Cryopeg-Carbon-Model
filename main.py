@@ -25,7 +25,7 @@ def log_results(analyses, savelog=True):
                   "Brine dOC", "Predicted brine dOC", "Present cell density", "Predicted end cell density",
                   "EEA Lower", "EEA Upper", "Real EEA", "EEA predicted timespan", "dOC/cell",
                   "Maintenance energy lower bounds", "Maintenance energy upper bound", "Simulation growth rate",
-                  "Minimum growth rate", "Minimum doubling time", "Growth yiel d", "Brine expansion factor"]
+                  "Minimum growth rate", "Minimum doubling time", "Growth yield", "Brine expansion factor"]
     csv_rows = []
 
     for analysis in analyses:
