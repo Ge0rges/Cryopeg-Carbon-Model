@@ -101,9 +101,16 @@ def log_results(analyses, savelog=True):
             write.writerows(csv_rows)
 
     # Make collective plot
+    scenarios_fig_pair1 = plot_multiple_scenarios(analyses[0:2], advance_cycler=0)
+    scenarios_fig_pair2 = plot_multiple_scenarios(analyses[2:4], advance_cycler=1)
+    scenarios_fig_pair3 = plot_multiple_scenarios(analyses[4:6], advance_cycler=2)
     scenarios_fig = plot_multiple_scenarios(analyses)
 
     if savelog:  # Plots folder must exist in same directory as main.py
+        scenarios_fig_pair1.savefig("Results/pair1_scenarios_model.pdf", format="pdf", dpi=500, bbox_inches='tight')
+        scenarios_fig_pair2.savefig("Results/pair2_scenarios_model.pdf", format="pdf", dpi=500, bbox_inches='tight')
+        scenarios_fig_pair3.savefig("Results/pair3_scenarios_model.pdf", format="pdf", dpi=500, bbox_inches='tight')
+
         scenarios_fig.savefig("Results/all_scenarios_model.pdf", format="pdf", dpi=500, bbox_inches='tight')
 
     else:  # Show the figures

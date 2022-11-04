@@ -18,9 +18,7 @@ def plot_model(analysis: Analysis):
     in one figure. Returns a figure.
     """
 
-    fig, axs = plt.subplots(1, 2, constrained_layout=True, dpi=500)
-
-    #fig.suptitle(analysis.title, fontsize="x-large", fontweight="medium")
+    fig, axs = plt.subplots(1, 2, dpi=500)
 
     t = analysis.model_result.t
 
@@ -47,7 +45,7 @@ def plot_model(analysis: Analysis):
     return fig
 
 
-def plot_multiple_scenarios(analyses: [Analysis]):
+def plot_multiple_scenarios(analyses: [Analysis], advance_cycler: int = 0):
     """
     Plots the results of many model outputs in one figure. In one figure, creates three subplots.
     Each subplot is an overlay of organic carbon, inorganic carbon, and cell densities, from each result.
@@ -64,11 +62,13 @@ def plot_multiple_scenarios(analyses: [Analysis]):
 
     fig, axs = plt.subplots(1, 4, dpi=500, figsize=(20, 10))
 
-    #fig.suptitle("Model outputs of all considered scenarios", fontsize="xx-large", fontweight="medium")
-
     cmap = plt.cm.get_cmap("Paired")
     for i in range(len(axs)):
         axs[i].set_prop_cycle(cycler('color', cmap.colors) * cycler('linestyle', ['-', '--']))
+
+        for j in range(advance_cycler):
+            axs[i]._get_lines.get_next_color()
+            axs[i]._get_lines.get_next_color()
 
     # Particulate organic carbon plot
     for label, P, t in zip(labels, P_array, t_array):
@@ -110,38 +110,7 @@ def plot_multiple_scenarios(analyses: [Analysis]):
     axs[3].set_ylabel('cells/mL')
     axs[3].set_title('Cell count over time')
 
-    axs[2].legend(loc=0)
-
-    return fig
-
-
-def hypothetical_growth_scenarios():
-    """
-    Plots a set of hypothetical growth curves defined by various equations. Returns a figure.
-    """
-
-    fig, axis = plt.subplots(1, 1, tight_layout=True, dpi=500)
-
-    #fig.suptitle("Hypothetical growth scenarios", fontsize="x-large", fontweight="medium")
-
-    x = np.linspace(0, 40000, num=4000000)
-
-    x_exp = np.linspace(0, 6.90776, num=len(x))
-    y_exp = 10**5 * np.exp(x_exp)
-    y_cyclic = 10**5 + (10**8 - 10**5)/2 + np.sin(x/4244.1333333333 + 1.5*np.pi) * (10**8 - 10**5)/2
-    y_ng = np.full(shape=len(x), fill_value=10**8)
-    y_spike = np.where(x < 0.02, 10**5, np.where(x < 10, x*10**7 + 10*5, 10**8))
-
-    axis.loglog(x, y_spike, label='Rapid', color="blue")
-    axis.loglog(x, y_exp, label='Slow', color="green")
-    axis.loglog(x, y_cyclic, label='Carbon addition', color="red")
-    axis.loglog(x, y_ng, label='No Growth', color="yellow", linestyle='dashed')
-
-    axis.set_ylim([0.1, 10**10])
-    axis.set_xlim([0.01, 10**5])
-    axis.set_xlabel('Years from start')
-    axis.set_ylabel('cells/mL')
-    axis.legend(loc=4)
+    axs[2].legend(loc='lower left')
 
     return fig
 
@@ -189,9 +158,37 @@ def plot_sensitivity(analysis: Analysis):
     axs.set_xlabel('Organism parameter', fontsize=12)
     axs.set_ylabel("Sobol Index", fontsize=12)
     axs.set_xticks([r + barWidth for r in range(len(ST))], p_names)
-    #axs.set_title("Sensitivity analysis of organism parameters - " + analysis.scenario.title + " scenario")
 
     axs.legend(loc=0)
+
+    return fig
+
+
+def hypothetical_growth_scenarios():
+    """
+    Plots a set of hypothetical growth curves defined by various equations. Returns a figure.
+    """
+
+    fig, axis = plt.subplots(1, 1, tight_layout=True, dpi=500)
+
+    x = np.linspace(0, 40000, num=4000000)
+
+    x_exp = np.linspace(0, 6.90776, num=len(x))
+    y_exp = 10**5 * np.exp(x_exp)
+    y_cyclic = 10**5 + (10**8 - 10**5)/2 + np.sin(x/4244.1333333333 + 1.5*np.pi) * (10**8 - 10**5)/2
+    y_ng = np.full(shape=len(x), fill_value=10**8)
+    y_spike = np.where(x < 0.02, 10**5, np.where(x < 10, x*10**7 + 10*5, 10**8))
+
+    axis.loglog(x, y_spike, label='Rapid', color="blue")
+    axis.loglog(x, y_exp, label='Slow', color="green")
+    axis.loglog(x, y_cyclic, label='Carbon addition', color="red")
+    axis.loglog(x, y_ng, label='No Growth', color="brown", linestyle='dashed')
+
+    axis.set_ylim([0.1, 10**10])
+    axis.set_xlim([0.01, 10**5])
+    axis.set_xlabel('Years from start')
+    axis.set_ylabel('cells/mL')
+    axis.legend(loc=4)
 
     return fig
 
