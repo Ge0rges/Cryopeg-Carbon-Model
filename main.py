@@ -79,11 +79,11 @@ def log_results(analyses, savelog=True):
             if not os.path.exists("Results/"):
                 os.mkdir('Results/')
 
-            model_fig.savefig("Results/" + analysis.title + "_model.pdf", format="pdf", dpi=500, bbox_inches='tight')
+            model_fig.savefig("Results/" + analysis.title + "_model.pdf", format="pdf", dpi=500)
             csv_rows.append(values)
 
             if sa_fig:
-                sa_fig.savefig("Results/" + analysis.title + "_sa.pdf", format="pdf", dpi=500, bbox_inches='tight')
+                sa_fig.savefig("Results/" + analysis.title + "_sa.pdf", format="pdf", dpi=500)
 
         else:
             model_fig.show()
@@ -107,11 +107,11 @@ def log_results(analyses, savelog=True):
     scenarios_fig = plot_multiple_scenarios(analyses)
 
     if savelog:  # Plots folder must exist in same directory as main.py
-        scenarios_fig_pair1.savefig("Results/pair1_scenarios_model.pdf", format="pdf", dpi=500, bbox_inches='tight')
-        scenarios_fig_pair2.savefig("Results/pair2_scenarios_model.pdf", format="pdf", dpi=500, bbox_inches='tight')
-        scenarios_fig_pair3.savefig("Results/pair3_scenarios_model.pdf", format="pdf", dpi=500, bbox_inches='tight')
+        scenarios_fig_pair1.savefig("Results/pair1_scenarios_model.pdf", format="pdf", dpi=500)
+        scenarios_fig_pair2.savefig("Results/pair2_scenarios_model.pdf", format="pdf", dpi=500)
+        scenarios_fig_pair3.savefig("Results/pair3_scenarios_model.pdf", format="pdf", dpi=500)
 
-        scenarios_fig.savefig("Results/all_scenarios_model.pdf", format="pdf", dpi=500, bbox_inches='tight')
+        scenarios_fig.savefig("Results/all_scenarios_model.pdf", format="pdf", dpi=500)
 
     else:  # Show the figures
         scenarios_fig.show()
@@ -142,4 +142,4 @@ if __name__ == "__main__":  # Generates all figures and data points.
 
     # Generate the hypothetical growth scenarios figure.
     hg_fig = hypothetical_growth_scenarios()
-    hg_fig.savefig("Results/" + "hypothetical_growth.pdf", format="pdf", dpi=500, bbox_inches='tight')
+    hg_fig.savefig("Results/" + "hypothetical_growth.pdf", format="pdf", dpi=500)

@@ -24,7 +24,7 @@ def plot_model(analysis: Analysis):
                      value_name=("femtograms C/mL"))
 
     # Make figure
-    f, axs = plt.subplots(1, 2, figsize=(8, 4))
+    fig, axs = plt.subplots(1, 2, figsize=(8, 4))
     sns.lineplot(data=melted, x="Years from start", y="femtograms C/mL", hue="Carbon type",
                  palette=['brown', 'blue', 'black'], ax=axs[0])
     sns.lineplot(data=data, x="Years from start", y="Cells", color="green", ax=axs[1])
@@ -44,9 +44,9 @@ def plot_model(analysis: Analysis):
     axs[0].set_title('Carbon over time')
     axs[1].set_title('Cells over time')
 
-    f.tight_layout()
+    fig.tight_layout()
 
-    return f
+    return fig
 
 
 def plot_multiple_scenarios(analyses: [Analysis], advance_cycler: int = None):
@@ -114,7 +114,7 @@ def plot_sensitivity(analysis: Analysis):
     p_names = np.asarray(p_names)[indices]
 
     # Make plot
-    fig, axs = plt.subplots(1, 1, tight_layout=True, dpi=500)
+    fig, axs = plt.subplots(1, 1)
 
     # Set position of bar on X axis
     barWidth = 0.28
@@ -126,14 +126,16 @@ def plot_sensitivity(analysis: Analysis):
     axs.bar(br2, S1, width=barWidth, label="First-order")
 
     for index in range(len(br1)):
-        axs.text(br1[index] - barWidth/2, ST[index]+0.01, "%.2f" % ST[index], size=12)
-        axs.text(br2[index] - barWidth/2, S1[index]+0.01, "%.2f" % S1[index], size=12)
+        axs.text(br1[index] - barWidth/2, ST[index]+0.01, "%.2f" % ST[index])
+        axs.text(br2[index] - barWidth/2, S1[index]+0.01, "%.2f" % S1[index])
 
-    axs.set_xlabel('Organism parameter', fontsize=12)
-    axs.set_ylabel("Sobol Index", fontsize=12)
+    axs.set_xlabel('Organism parameter')
+    axs.set_ylabel("Sobol Index")
     axs.set_xticks([r + barWidth for r in range(len(ST))], p_names)
 
     axs.legend(loc=0)
+
+    fig.tight_layout()
 
     return fig
 
@@ -143,7 +145,7 @@ def hypothetical_growth_scenarios():
     Plots a set of hypothetical growth curves defined by various equations. Returns a figure.
     """
 
-    fig, axis = plt.subplots(1, 1, tight_layout=True, dpi=500)
+    fig, axis = plt.subplots(1, 1)
 
     x = np.linspace(0, 40000, num=4000000)
 
@@ -163,6 +165,8 @@ def hypothetical_growth_scenarios():
     axis.set_xlabel('Years from start')
     axis.set_ylabel('cells/mL')
     axis.legend(loc=4)
+
+    fig.tight_layout()
 
     return fig
 
