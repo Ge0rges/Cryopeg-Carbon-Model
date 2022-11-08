@@ -74,8 +74,12 @@ function solve_model(p, u0; sensitivity_analysis=false)
     max_cb = ContinuousCallback(max_condition, do_nothing)
 
     # Min condition for EEA rate
-    min_condition(u, t, integrator) = integrator.p[10] * u[4] - u[1]
-    min_cb = ContinuousCallback(min_condition, do_nothing)
+    eea_min_condition(u, t, integrator) = integrator.p[10] * u[4] - u[1]
+    eea_min_cb = ContinuousCallback(eea_min_condition, do_nothing)
+
+    # Min condition for IC fixation rate
+    ic_min_condition(u, t, integrator) = integrator.p[8] - u[3]
+    ic_min_cb = ContinuousCallback(ic_min_condition, do_nothing)
 
     # Set things to 0 if they are less than 1e-100
     zero_condition(u, t, integrator) = any(x -> x < 1e-20, u)
@@ -89,7 +93,7 @@ function solve_model(p, u0; sensitivity_analysis=false)
     zero_cb = DiscreteCallback(zero_condition, zero_out!)
 
     # Callback list
-    cbs = CallbackSet(carbon_add_cb, max_cb, min_cb, zero_cb)
+    cbs = CallbackSet(carbon_add_cb, max_cb, eea_min_cb, ic_min_cb, zero_cb)
 
     # Out of domain function
     is_invalid_domain(u, p, t) = any(x -> x < 0, u)
@@ -144,7 +148,7 @@ function model(du, u, p, t)
 
     ## CARBON
     dOC_consumption = required_dOC_per_cell * (cell_count - deaths)
-    fixed_carbon = inorganic_carbon_fixing_rate * inorganic_carbon_content
+    fixed_carbon = min(inorganic_carbon_fixing_rate,  inorganic_carbon_content)
 
     # EEA rate
     eea_removal = min(eea_rate*cell_count, pOC_content)

@@ -30,16 +30,16 @@ class Scenario:
     title = None  # String - Scenario name. Used in plots later.
 
     # Constants - Common to all Scenarios
-    _start_cell = 10 ** 5  # Average cells/ml order of magnitue for sea-ice (Cooper et al. 2019)
-    _carrying_capacity = 10 ** 9  # cells/ml - Maximum cell density.
+    _start_cell = 10 ** 5  # Average cells/mL order of magnitue for sea-ice (Cooper et al. 2019)
+    _carrying_capacity = 10 ** 9  # cells/mL - Maximum cell density.
     _growth_rate = None  # 1/day - Growth rate used by the model.
 
-    _particulate_organic_carbon_input_rate = 0  # fg C/(ml x day) - Particulate organic carbon input per day.
-    _dissolved_organic_carbon_input_rate = 0  # fg C/(ml x day) - Dissolved carbon input per day.
+    _particulate_organic_carbon_input_rate = 0  # fg C/(mL x day) - Particulate organic carbon input per day.
+    _dissolved_organic_carbon_input_rate = 0  # fg C/(mL x day) - Dissolved carbon input per day.
 
-    _start_inorganic_carbon_content = 0  # fg C/ml - Inroagnic carbon in brine at start.
-    _inorganic_carbon_input_rate = 0  # fg C/(ml x day) - Organic carbon input per day.
-    _inorganic_carbon_fixation_rate = 0  # %/day - Percentage of inorganic carbon converted to organic carbon per day.
+    _start_inorganic_carbon_content = 0  # fg C/mL - Inroagnic carbon in brine at start.
+    _inorganic_carbon_input_rate = 0  # fg C/(mL x day) - Organic carbon input per day.
+    _inorganic_carbon_fixation_rate = 0  # fg C/(mL x day) - Total inorganic carbon converted to organic carbon per day.
     _inorganic_carbon_per_cell = 0  # fg C/cell -  Amount of inorganic carbon per cell.
 
     _timespan = 40000*365.25  # Age in days based on carbon dating (Iwanaha et al. 2021)
@@ -94,7 +94,7 @@ def cb1_scenario():
     However, it shares many characteristics with the other intra-sediment brines studied. Therefore, using its data,
     paired with regional organic carbon values, we construct a common intra-sediment brine scenario.
     """
-    dry_sediment_density = 2.625 * 10 ** 6  # ug/ml average density density of kaolinite and sand
+    dry_sediment_density = 2.625 * 10 ** 6  # ug/mL average density density of kaolinite and sand
     expansion_factor = 0.0905  # Assumed expansion factor of porewater from liquid to solid. (French & Shur 2010)
     beo_volumetric_ice_content = 0.731  # L solid porewater/L permafrost from Go Iwahana (unpublished, but see Meyer et al. 2010)
     beo_poc = 0.0232  # ug C/ug dry sed (our data)
@@ -103,15 +103,15 @@ def cb1_scenario():
     cb1_18_doc = 1.02 * 10 ** 5  # in uM from Cooper et al. 2019
 
     # Conversions
-    # Converting from ug C/ug dry sediment to fg C/ml permafrost
+    # Converting from ug C/ug dry sediment to fg C/mL permafrost
     # L dry sediment / L permafrost = (1 - L solid porewater / L permafrost)
-    # ug C/ug dry sed * ug dry sediment/ml dry sediment * ml/dry sediment/ml permafrost
+    # ug C/ug dry sed * ug dry sediment/mL dry sediment * ml/dry sediment/mL permafrost
     beo_poc *= dry_sediment_density * (1 - beo_volumetric_ice_content) * 10 ** 9
 
     # Converting from mg C/L thawed porewater * L thawed porewater/L permafrost to fg C/ml
     beo_doc *= beo_volumetric_ice_content * (1 - expansion_factor) * 10 ** 9
 
-    # Converting from micromolar C to fg C/ml using carbon molar mass of 12.011
+    # Converting from micromolar C to fg C/mL using carbon molar mass of 12.011
     cb1_18_poc = convert_micromolar_carbon_to_fgC_per_ml(cb1_18_poc)
     cb1_18_doc = convert_micromolar_carbon_to_fgC_per_ml(cb1_18_doc)
 
@@ -123,7 +123,7 @@ def cb1_scenario():
     scenario.start_doc = beo_doc
     scenario.end_poc = cb1_18_poc
     scenario.end_doc = cb1_18_doc
-    scenario.observed_end_cell_density = 5.7 * 10 ** 6  # Average cell/ml order of magnitude (Cooper et al. 2019)
+    scenario.observed_end_cell_density = 5.7 * 10 ** 6  # Average cell/mL order of magnitude (Cooper et al. 2019)
     scenario.lab_growth_rate = 0.06  # Marinobacter aerobic growth rate in-situ based on lab experiments (unpublished), 50% anaerobic penalty
     scenario.dissolved_organic_carbon_per_cell = 15.7  # Litterature based value (Nguyen & Maranger 2011)
 
@@ -137,7 +137,7 @@ def cb4_scenario():
     unique from the other cryopeg brines, e.g. Psychrobacter is the dominant genus in this brine rather than
     Marinobacter like many others.
     """
-    dry_sediment_density = 2.625 * 10 ** 6  # ug/ml average density density of kaolinite and sand
+    dry_sediment_density = 2.625 * 10 ** 6  # ug/mL average density density of kaolinite and sand
     expansion_factor = 0.0905  # Assumed expansion factor of porewater from liquid to solid. (French & Shur 2010)
     cb4_volumetric_ice_content = 0.527  # L solid porewater/L permafrost from Go Iwahana (unpublished, but see Meyer et al. 2010)
     cb4_poc = 0.0136  # ug C/ug dry sed (our data)
@@ -146,15 +146,15 @@ def cb4_scenario():
     cb4_brine_doc = 8.50 * 10 ** 4  # in uM (Cooper et al. 2019)
 
     # Conversions
-    # Converting from ug C/ug dry sediment to fg C/ml permafrost
+    # Converting from ug C/ug dry sediment to fg C/mL permafrost
     # L dry sediment / L permafrost = (1 - L solid porewater / L permafrost)
-    # ug C/ug dry sed * ug dry sediment/ml dry sediment * ml/dry sediment/ml permafrost
+    # ug C/ug dry sed * ug dry sediment/mL dry sediment * ml/dry sediment/mL permafrost
     cb4_poc *= dry_sediment_density * (1 - cb4_volumetric_ice_content) * 10 ** 9
 
     # Converting from mg C/L thawed porewater * L thawed porewater/L permafrost  to fg C/ml
     cb4_doc *= cb4_volumetric_ice_content * (1 - expansion_factor) * 10 ** 9
 
-    # Converting from micromolar C to fg C/ml using carbon molar mass of 12.011
+    # Converting from micromolar C to fg C/mL using carbon molar mass of 12.011
     cb4_brine_poc = convert_micromolar_carbon_to_fgC_per_ml(cb4_brine_poc)
     cb4_brine_doc = convert_micromolar_carbon_to_fgC_per_ml(cb4_brine_doc)
 
@@ -166,7 +166,7 @@ def cb4_scenario():
     scenario.start_doc = cb4_doc
     scenario.end_poc = cb4_brine_poc
     scenario.end_doc = cb4_brine_doc
-    scenario.observed_end_cell_density = 1.14 * 10 ** 7  # cell/ml for CB4_18 (Cooper et al. 2019)
+    scenario.observed_end_cell_density = 1.14 * 10 ** 7  # cell/mL for CB4_18 (Cooper et al. 2019)
     scenario.lab_growth_rate = 0.016  # Psychrobacter cryohalolentis growth rate in-situ based on lab experiments (Bakermans et al. 2003)
     scenario.dissolved_organic_carbon_per_cell = 54.04  # Took average P. cryohalolentis size: 0.365014 um3 (Bakermans et al. 2006), and carbon conversion factor as 148 fg C/um3 (Kirchman et al. 2009)
 
@@ -181,31 +181,31 @@ def cbiw_scenario():
     It is likely that more carbon was added than our estimate, however given our current understanding it is impossible
     to quantify precisely how much carbon was added into the brine during its migration.
     """
-    dry_sediment_density = 2.625 * 10 ** 6  # ug/ml average density density of kaolinite and sand
+    dry_sediment_density = 2.625 * 10 ** 6  # ug/mL average density density of kaolinite and sand
     expansion_factor_porewater = 0.0905  # Assumed expansion factor of porewater from liquid to solid. (French & Shur 2010)
     beo_volumetric_ice_content = 0.731  # L solid porewater/L permafrost from Go Iwahana (unpublished, but see Meyer et al. 2010)
     expansion_factor_ice = 0.08042  # % Expansion factor of pure water (massive ice) from liquid to solid
     beo_poc = 0.0232  # ug C/ug dry sed (our data)
     beo_doc = 51.2323  # mg C/L thawed porewater (our data)
-    massive_ice_poc = 4.5  # ug C/ml thawed massive ice (Collangelo-Lillis 2016)
-    massive_ice_doc = 0.65  # μg C/ml thawed massive ice. EPS as a proxy for DOC. (Colangelo-Lillis et al. 2016)
+    massive_ice_poc = 4.5  # ug C/mL thawed massive ice (Collangelo-Lillis 2016)
+    massive_ice_doc = 0.65  # μg C/mL thawed massive ice. EPS as a proxy for DOC. (Colangelo-Lillis et al. 2016)
     cbiw_brine_poc = 1.98 * 10 ** 3  # in uM (Cooper et al. 2019)
     cbiw_brine_doc = 3 * 10 ** 4  # in uM (Cooper et al. 2019)
 
     # Conversions
-    # Converting from ug C/ug dry sediment to fg C/ml permafrost
+    # Converting from ug C/ug dry sediment to fg C/mL permafrost
     # L dry sediment / L permafrost = (1 - L solid porewater / L permafrost)
-    # ug C/ug dry sed * ug dry sediment/ml dry sediment * ml/dry sediment/ml permafrost
+    # ug C/ug dry sed * ug dry sediment/mL dry sediment * ml/dry sediment/mL permafrost
     beo_poc *= dry_sediment_density * (1 - beo_volumetric_ice_content) * 10 ** 9
 
     # Converting from mg C/L thawed porewater * L thawed porewater/L permafrost to fg C/ml
     beo_doc *= beo_volumetric_ice_content * (1 - expansion_factor_porewater) * 10 ** 9
 
-    # Converting from ug C/ml thawed massive ice to fg C/ml massive ice
+    # Converting from ug C/mL thawed massive ice to fg C/mL massive ice
     massive_ice_poc *= massive_ice_poc * (1 - expansion_factor_ice) * 10 ** 9
     massive_ice_doc *= massive_ice_doc * (1 - expansion_factor_ice) * 10 ** 9
 
-    # Converting from micromolar C to fg C/ml using carbon molar mass of 12.011
+    # Converting from micromolar C to fg C/mL using carbon molar mass of 12.011
     cbiw_brine_poc = convert_micromolar_carbon_to_fgC_per_ml(cbiw_brine_poc)
     cbiw_brine_doc = convert_micromolar_carbon_to_fgC_per_ml(cbiw_brine_doc)
 
@@ -222,7 +222,7 @@ def cbiw_scenario():
         (scenario._timespan - 11000*365.25, (massive_ice_poc, massive_ice_doc))  # Add massive ice carbon at 11000y ago.
     ]
 
-    scenario.observed_end_cell_density = 1.39 * 10 ** 8  # average cell/ml of CBIW (Cooper et al. 2019)
+    scenario.observed_end_cell_density = 1.39 * 10 ** 8  # average cell/mL of CBIW (Cooper et al. 2019)
     scenario.lab_growth_rate = 0.06  # Marinobacter aerobic growth rate in-situ based on lab experiments (unpublished), 50% anaerobic penalty
     scenario.dissolved_organic_carbon_per_cell = 15.7  # Litterature based value (Nguyen & Maranger 2011)
 
