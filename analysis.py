@@ -50,6 +50,7 @@ class Analysis:
     growth_yield: float = None
 
     title = None
+    _variable_title = None
 
     def __init__(self, scenario: Scenario, use_minimum_growth_rate: bool, use_me_lower_bound: bool):
         """
@@ -63,10 +64,10 @@ class Analysis:
         if self._use_minimum_growth_rate:
             self.scenario._growth_rate = None
 
-        self.title = self.scenario.title + " - "
-        self.title += "minimum growth rate - " if use_minimum_growth_rate else "lab growth rate - "
-        self.title += "lower bound ME" if use_me_lower_bound else "upper bound ME"
+        self._variable_title = "Min μ - " if use_minimum_growth_rate else "Max μ - "
+        self._variable_title += "Low ME" if use_me_lower_bound else "High ME"
 
+        self.title = self.scenario.title + " - " + self._variable_title
         return
 
 

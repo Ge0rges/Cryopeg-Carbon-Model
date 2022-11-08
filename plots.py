@@ -1,15 +1,16 @@
 """
-Contains the functions that plot various results using matplotlib.
+Contains the functions that plot various results using matplotlib and seaborn.
 """
 
-import matplotlib.pyplot as plt
 import matplotlib
+import matplotlib.pyplot as plt
+import seaborn as sns
 import numpy as np
-from cycler import cycler
-
 from analysis import Analysis
+import pandas as pd
 
 matplotlib.use('TkAgg')
+sns.set_theme()
 
 
 def plot_model(analysis: Analysis):
@@ -17,102 +18,75 @@ def plot_model(analysis: Analysis):
     Plots the result of a model iteration: inorganic and organic carbon overlayed, and cell density seperately
     in one figure. Returns a figure.
     """
+    # Make seaborn data frame
+    data = analysis.model_result.get_dataframe(analysis.scenario.title, analysis._variable_title)
+    melted = pd.melt(data, id_vars=("Years from start"), value_vars=("POC", "DOC", "IC"), var_name=("Carbon type"),
+                     value_name=("femtograms C/mL"))
 
-    fig, axs = plt.subplots(1, 2, dpi=500)
+    # Make figure
+    f, axs = plt.subplots(1, 2, figsize=(8, 4))
+    sns.lineplot(data=melted, x="Years from start", y="femtograms C/mL", hue="Carbon type",
+                 palette=['brown', 'blue', 'black'], ax=axs[0])
+    sns.lineplot(data=data, x="Years from start", y="Cells", color="green", ax=axs[1])
 
-    t = analysis.model_result.t
+    axs[0].set_xscale('log')
+    axs[0].set_yscale('log')
+    axs[1].set_xscale('log')
+    axs[1].set_yscale('log')
 
-    # Carbon plot
-    axs[0].loglog(t / 365, analysis.model_result.pOC, label='Particulate organic carbon', color="brown", linewidth=2.5)
-    axs[0].loglog(t / 365, analysis.model_result.dOC, label='Dissolved organic carbon', color="blue", linewidth=2.5)
-    axs[0].loglog(t / 365, analysis.model_result.IC, label='Inorganic carbon', color="black", linewidth=2.5)
+    axs[0].set_ylim([1, 10 ** 14])
+    axs[0].set_xlim([0.01, 10 ** 5])
+    axs[1].set_ylim([1, 10 ** 10])
+    axs[1].set_xlim([0.01, 10 ** 5])
 
-    axs[0].set_xlim([0.01, 10**5])
-    axs[0].set_xlabel('Years from start')
-    axs[0].set_ylabel('femtograms C/mL')
+    axs[1].set_ylabel("cells/mL")
+
     axs[0].set_title('Carbon over time')
-    axs[0].legend(loc=0)
+    axs[1].set_title('Cells over time')
 
-    # Cell count plot
-    axs[1].loglog(t / 365, analysis.model_result.cells, label='Cells', color="green", linewidth=2.5)
-    axs[1].set_xlabel('Years from start')
-    axs[1].set_ylabel('cells/mL')
-    axs[1].set_title('Cell count over time')
-    axs[1].set_ylim([1, 10**10])
-    axs[1].set_xlim([0.01, 10**5])
-    axs[1].legend(loc=0)
+    f.tight_layout()
 
-    return fig
+    return f
 
 
-def plot_multiple_scenarios(analyses: [Analysis], advance_cycler: int = 0):
+def plot_multiple_scenarios(analyses: [Analysis], advance_cycler: int = None):
     """
     Plots the results of many model outputs in one figure. In one figure, creates three subplots.
     Each subplot is an overlay of organic carbon, inorganic carbon, and cell densities, from each result.
     Returns a figure.
     """
-    P_array = [analysis.model_result.pOC for analysis in analyses]
-    D_array = [analysis.model_result.dOC for analysis in analyses]
-    I_array = [analysis.model_result.IC for analysis in analyses]
-    N_array = [analysis.model_result.cells for analysis in analyses]
-    t_array = [analysis.model_result.t for analysis in analyses]
-    labels = [analysis.title for analysis in analyses]
 
-    assert len(labels) == len(P_array) == len(t_array) == len(D_array) == len(I_array) == len(N_array)
+    # Get the right color for plot decomposition
+    cm = sns.color_palette("Paired")
+    cp = [cm[11], cm[7], cm[1]]
+    cp = cp if advance_cycler is None else [cp[advance_cycler]]
 
-    fig, axs = plt.subplots(1, 4, dpi=500, figsize=(20, 10))
+    # Build the dataframes for each category then melt them
+    all_data = pd.DataFrame()
+    for analysis in analyses:
+        data = analysis.model_result.get_dataframe(analysis.scenario.title, analysis._variable_title)
+        all_data = pd.concat([all_data, data]).reset_index(drop=True)
 
-    cmap = plt.cm.get_cmap("Paired")
-    for i in range(len(axs)):
-        axs[i].set_prop_cycle(cycler('color', cmap.colors) * cycler('linestyle', ['-', '--']))
+    melted_data = all_data.melt(id_vars=["Years from start", "Scenario", "Analysis type"],
+                                value_vars=["POC", "DOC", "IC", "Cells"], var_name=("Data type"))
 
-        for j in range(advance_cycler):
-            axs[i]._get_lines.get_next_color()
-            axs[i]._get_lines.get_next_color()
+    # Plot
+    grid = sns.relplot(data=melted_data, x="Years from start", y="value", palette=cp, aspect=0.7,
+                       col="Data type", hue="Scenario", style="Analysis type", dashes=[(2, 1), (5, 5)],
+                       kind="line", facet_kws={'sharey': False, 'sharex': True, "xlim": [0.01, 10 ** 5]})
 
-    # Particulate organic carbon plot
-    for label, P, t in zip(labels, P_array, t_array):
-        axs[0].loglog(t / 365, P, label=label, linewidth=2.5)
+    grid.set(xscale="log", yscale="log")
+    grid.set_titles(template="{col_name} over time")
 
-    axs[0].set_ylim([0.01, 10**14])
-    axs[0].set_xlim([0.01, 10**5])
-    axs[0].set_xlabel('Years from start')
-    axs[0].set_ylabel('femtograms pOC/mL')
-    axs[0].set_title('Particulate organic carbon over time')
+    # Tune relplot
+    y_labels = ["femtograms C/mL"] * 3 + ["cells/mL"]
+    y_lim = [[1, 10 ** 14]] * 3 + [[1, 10 ** 10]]
+    for ax, label, lim in zip(grid.axes.ravel(), y_labels, y_lim):
+        ax.set_ylabel(label)
+        ax.set_yscale("log")
+        ax.set_ylim(lim)
 
-    # Dissolved organic carbon plot
-    for label, D, t in zip(labels, D_array, t_array):
-        axs[1].loglog(t / 365, D, label=label, linewidth=2.5)
-
-    axs[1].set_ylim([0.01, 10**14])
-    axs[1].set_xlim([0.01, 10**5])
-    axs[1].set_xlabel('Years from start')
-    axs[1].set_ylabel('femtograms dOC/mL')
-    axs[1].set_title('Dissolved organic carbon over time')
-
-    # Inorganic carbon plot
-    for label, I, t in zip(labels, I_array, t_array):
-        axs[2].loglog(t / 365, I, label=label, linewidth=2.5)
-
-    axs[2].set_ylim([0.01, 10**14])
-    axs[2].set_xlim([0.01, 10**5])
-    axs[2].set_xlabel('Years from start')
-    axs[2].set_ylabel('femtograms C/mL')
-    axs[2].set_title('Inorganic carbon over time')
-
-    # Cell count plot
-    for label, N, t in zip(labels, N_array, t_array):
-        axs[3].loglog(t / 365, N, label=label, linewidth=2.5)
-
-    axs[3].set_ylim([1, 10**10])
-    axs[3].set_xlim([0.01, 10**5])
-    axs[3].set_xlabel('Years from start')
-    axs[3].set_ylabel('cells/mL')
-    axs[3].set_title('Cell count over time')
-
-    axs[2].legend(loc='lower left')
-
-    return fig
+    return grid.tight_layout()
 
 
 def plot_sensitivity(analysis: Analysis):
@@ -143,7 +117,7 @@ def plot_sensitivity(analysis: Analysis):
     fig, axs = plt.subplots(1, 1, tight_layout=True, dpi=500)
 
     # Set position of bar on X axis
-    barWidth = 0.25
+    barWidth = 0.28
     br1 = np.arange(len(ST))
     br2 = [x + barWidth for x in br1]
 
@@ -152,8 +126,8 @@ def plot_sensitivity(analysis: Analysis):
     axs.bar(br2, S1, width=barWidth, label="First-order")
 
     for index in range(len(br1)):
-        axs.text(br1[index] - barWidth/2, ST[index], "%.2f" % ST[index], size=12)
-        axs.text(br2[index] - barWidth/2, S1[index], "%.2f" % S1[index], size=12)
+        axs.text(br1[index] - barWidth/2, ST[index]+0.01, "%.2f" % ST[index], size=12)
+        axs.text(br2[index] - barWidth/2, S1[index]+0.01, "%.2f" % S1[index], size=12)
 
     axs.set_xlabel('Organism parameter', fontsize=12)
     axs.set_ylabel("Sobol Index", fontsize=12)

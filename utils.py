@@ -4,6 +4,9 @@ Some helper functions. Includes classes to encapsulate analysis results.
 
 from decimal import Decimal
 
+import pandas
+import numpy as np
+
 
 def convert_micromolar_carbon_to_fgC_per_ml(micromolar):
     """Converts a micromolar of carbon value to femtograms of carbon per ml."""
@@ -42,6 +45,19 @@ class ModelResult:
     IC: [float] = None
     cells: [float] = None
     t: [float] = None
+
+    def get_dataframe(self, scenario, variable_title):
+        """
+        Returns model results as a dataframe. Removes duplicate values (e.g. discontinuities).
+        """
+        data = [self.t/365.25, self.pOC, self.dOC, self.IC, self.cells, [scenario]*len(self.t), [variable_title]*len(self.t)]
+        df = pandas.DataFrame(data=np.column_stack(data),
+                                columns=["Years from start", "POC", "DOC", "IC", "Cells", "Scenario", "Analysis type"])
+
+        df.drop_duplicates(subset=["Years from start", "Scenario", "Analysis type"], keep="last", inplace=True)
+
+        return df.astype({"Years from start": float, "POC": float, "DOC": float, "IC": float, "Cells": float,
+                           "Scenario": str, "Analysis type": str})
 
 
 class ExpansionResult:
