@@ -29,7 +29,7 @@ function run_sensitivity_analysis(p_bounds, u0_length)
     end
 
     # Run GSA
-    sobol_result = GlobalSensitivity.gsa(f1, Sobol(order=[0, 1], nboot=5, conf_level=0.95), p_bounds, samples=2^14)
+    sobol_result = GlobalSensitivity.gsa(f1, Sobol(order=[0, 1], nboot=5, conf_level=0.95), p_bounds, samples=2^18)
 
     @show sobol_result.ST_Conf_Int
     @show sobol_result.S1_Conf_Int
@@ -93,16 +93,16 @@ function solve_model(p, u0; sensitivity_analysis=false)
     zero_cb = DiscreteCallback(zero_condition, zero_out!)
 
     # Callback list
-    cbs = CallbackSet(carbon_add_cb, max_cb, eea_min_cb, ic_min_cb, zero_cb)
+    cbs = CallbackSet(carbon_add_cb, max_cb, eea_min_cb, ic_min_cb, zero_cb, PositiveDomain())
 
     # Out of domain function
-    is_invalid_domain(u, p, t) = any(x -> x < 0, u)
+    # is_invalid_domain(u, p, t) = any(x -> x < 0, u)
 
     # Build the ODE Problem and Solve
     prob = ODEProblem(model, u0[1:end-1], (0.0, last(u0)), p)
 
     save_last = sensitivity_analysis ? last(u0) : []
-    sol = solve(prob, Rosenbrock23(), callback=cbs, maxiters=1e6, isoutofdomain=is_invalid_domain, saveat=save_last)
+    sol = solve(prob, Rosenbrock23(), callback=cbs, maxiters=1e6, saveat=save_last) #isoutofdomain=is_invalid_domain
 
 
     return sol
