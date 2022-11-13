@@ -31,7 +31,7 @@ class Scenario:
 
     # Constants - Common to all Scenarios
     _start_cell = 10 ** 5  # Average cells/mL order of magnitue for sea-ice (Cooper et al. 2019)
-    _carrying_capacity = 10 ** 9  # cells/mL - Maximum cell density.
+    _carrying_capacity = 10 ** 8  # cells/mL - Maximum cell density.
     _growth_rate = None  # 1/day - Growth rate used by the model.
 
     _particulate_organic_carbon_input_rate = 0  # fg C/(mL x day) - Particulate organic carbon input per day.
@@ -49,12 +49,17 @@ class Scenario:
     # _Kd: fg C - The organic carbon concentration at which u = 1/2 u0.
     _Kd = 8.82 * 10 ** 5  # average Ks ug AA/L = 2.152 (Yager & Deming 1999) * DCAA are 41% carbon (Rowe & Deming 1985)
 
-    _paramater_bounds = [[1e-6, 1e2], [1e-5, 500], [1, 500], None, None,  # Ordered bounds for sensitivty analysis
-                         None, None, None, None, [0, 100], [1e3, 1e8], None]  # as in julia p list.
+    _paramater_bounds = [[1e-6, 1e2], [1e-5, 500], [1, 500], [1e5, 1e9], None,  # Ordered bounds for sensitivty analysis
+                         None, None, None, None, [0, 100], [1e3, 1e8], None, None, None, None, [1, 1e9], None]
+
+    # _paramater_bounds = [None, None, None, [1e5, 1e9], None,  # Ordered bounds for sensitivty analysis
+    #                      None, None, None, None, None, None, None, None, None, None, [1, 1e9], None]
 
     _paramater_names = ["μ", "Maintenance energy", "DOC/cell", "Carrying capacity", "pOC input rate",
                         "dOC input rate", "Inorganic carbon input rate", "Inorganic carbon fixation rate", "IC/cell",
-                        "EEA rate", "Kd", "Punctual organic carbon addition"]
+                        "EEA rate", "Kd", "Punctual organic carbon addition",
+                        # IVP
+                        "Starting POC", "Starting DOC", "Start IC", "Start cell density", "Timespan"]
 
     # Methods
     def get_julia_ordered_paramaters(self):
@@ -73,7 +78,7 @@ class Scenario:
         # punctual_organic_carbon_addition always at end in julia code. Changes to this array must be manually carried
         # to model.jl run_model()
 
-        assert len(self._paramater_bounds) == len(self._paramater_names) == len(ordered_p)
+        assert len(self._paramater_bounds) == len(self._paramater_names) == len(ordered_p) + len(self.get_julia_ordered_ivp())
 
         return ordered_p
 

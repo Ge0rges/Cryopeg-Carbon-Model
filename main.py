@@ -100,16 +100,16 @@ def log_results(analyses, savelog=True):
             write.writerow(csv_header)
             write.writerows(csv_rows)
 
-    # Make collective plot
-    scenarios_fig_pair1 = plot_multiple_scenarios(analyses[0:2], advance_cycler=0)
-    scenarios_fig_pair2 = plot_multiple_scenarios(analyses[2:4], advance_cycler=1)
-    scenarios_fig_pair3 = plot_multiple_scenarios(analyses[4:6], advance_cycler=2)
+    # Make a plot for each scenario, and then one with all scenarios
+    sc_index = int(len(analyses) / len(scenarios))
+
+    individual_scenarios = [plot_multiple_scenarios(analyses[i-1:sc_index*i], color_cycle=i) for i in range(1, len(scenarios))]
     scenarios_fig = plot_multiple_scenarios(analyses)
 
     if savelog:  # Plots folder must exist in same directory as main.py
-        scenarios_fig_pair1.savefig("Results/pair1_scenarios_model.pdf", format="pdf", dpi=500)
-        scenarios_fig_pair2.savefig("Results/pair2_scenarios_model.pdf", format="pdf", dpi=500)
-        scenarios_fig_pair3.savefig("Results/pair3_scenarios_model.pdf", format="pdf", dpi=500)
+
+        for i, fig in enumerate(individual_scenarios):
+            fig.savefig("Results/pair"+str(i)+"_scenarios_model.pdf", format="pdf", dpi=500)
 
         scenarios_fig.savefig("Results/all_scenarios_model.pdf", format="pdf", dpi=500)
 
@@ -125,13 +125,16 @@ if __name__ == "__main__":  # Generates all figures and data points.
     all_analyses = []
 
     # On every scenario, try every analysis configuration. Run a sensitivity analysis only on the first one.
-    do_SA = True
+    do_SA = False
     for scenario in scenarios:
         for use_minimum_growth_rate in [True, False]:
             use_me_lower_bound = not use_minimum_growth_rate
+
+            # for use_me_lower_bound in [True, False]:
+
             a = Analysis(scenario, use_minimum_growth_rate, use_me_lower_bound)
 
-            # Run SA on first config pair only, first scenario.
+            # Run SA on first config pair - first scenario, only.
             a.run_analysis(do_sensitivity_analysis=do_SA)
             do_SA = False
 

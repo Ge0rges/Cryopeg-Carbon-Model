@@ -49,7 +49,7 @@ def plot_model(analysis: Analysis):
     return fig
 
 
-def plot_multiple_scenarios(analyses: [Analysis], advance_cycler: int = None):
+def plot_multiple_scenarios(analyses: [Analysis], color_cycle: int = None):
     """
     Plots the results of many model outputs in one figure. In one figure, creates three subplots.
     Each subplot is an overlay of organic carbon, inorganic carbon, and cell densities, from each result.
@@ -59,7 +59,7 @@ def plot_multiple_scenarios(analyses: [Analysis], advance_cycler: int = None):
     # Get the right color for plot decomposition
     cm = sns.color_palette("Paired")
     cp = [cm[11], cm[7], cm[1]]
-    cp = cp if advance_cycler is None else [cp[advance_cycler]]
+    cp = cp if color_cycle is None else [cp[color_cycle]]
 
     # Build the dataframes for each category then melt them
     all_data = pd.DataFrame()
@@ -72,7 +72,7 @@ def plot_multiple_scenarios(analyses: [Analysis], advance_cycler: int = None):
 
     # Plot
     grid = sns.relplot(data=melted_data, x="Years from start", y="value", palette=cp, aspect=0.7,
-                       col="Data type", hue="Scenario", style="Analysis type", dashes=[(2, 1), (5, 5)],
+                       col="Data type", hue="Scenario", style="Analysis type", dashes=[(2, 1), (5, 5), (1, 1), (4, 3)],
                        kind="line", facet_kws={'sharey': False, 'sharex': True, "xlim": [0.01, 10 ** 5]})
 
     grid.set(xscale="log", yscale="log")

@@ -16,20 +16,20 @@ end
 
 
 # Runs the sensitivity analysis using Sobol method.
-function run_sensitivity_analysis(p_bounds, u0)
-    p_bounds = [p_bounds[i, :] for i in 1:size(p_bounds, 1)]
-
-    # If we do this once here, it doesn't have to be done n times in SA calls.
-    u0 = convert(Array{Float64}, u0)
+function run_sensitivity_analysis(p_bounds, u0_length)
+    # In Sensitivity analysis, paramaters include the initial conditions.
+    p_bounds = [p_bounds[i, :] for i in 1:size(p_bounds, 1)] # Fix array shape
+    p_bounds = convert(Array{Array{Float64}}, p_bounds[1:end])
 
     # Define a function that remakes the problem and gets its result. Called for each sample.
     f1 = function (p)
-        sol = solve_model(p, u0; sensitivity_analysis=true)
+        # u0 is the last n indices
+        sol = solve_model(p[1:end-u0_length], p[end-u0_length+1: end]; sensitivity_analysis=true)
         sol[:, end]
     end
 
     # Run GSA
-    sobol_result = GlobalSensitivity.gsa(f1, Sobol(order=[0, 1], nboot=5, conf_level=0.95), p_bounds, samples=2^18)
+    sobol_result = GlobalSensitivity.gsa(f1, Sobol(order=[0, 1], nboot=5, conf_level=0.95), p_bounds, samples=2^14)
 
     @show sobol_result.ST_Conf_Int
     @show sobol_result.S1_Conf_Int

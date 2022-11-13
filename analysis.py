@@ -235,8 +235,10 @@ def run_sensitivity_analysis(scenario: Scenario):
     Returns total and first order sobol indices in a tuple ordered as such.
     """
 
+    # In Sensitivity analysis, paramaters include the initial conditions.
     p_bounds = scenario._paramater_bounds
-    p = scenario.get_julia_ordered_paramaters()
+    p = scenario.get_julia_ordered_paramaters() + scenario.get_julia_ordered_ivp()
+    assert p[len(scenario.get_julia_ordered_paramaters()) - 1] == -1  # SA is not compatible with OC inputs
 
     # Sensitivity analysis
     # Fix the bounds to replace "None" with no range bounds that will yield a 0 sobol index.
@@ -245,7 +247,7 @@ def run_sensitivity_analysis(scenario: Scenario):
             p_bounds[i] = [p[i], p[i]]
 
     # Run the sensitivity analysis
-    ST, S1 = Main.run_sensitivity_analysis(p_bounds, scenario.get_julia_ordered_ivp())
+    ST, S1 = Main.run_sensitivity_analysis(p_bounds, len(scenario.get_julia_ordered_ivp()))
 
     result = SensitivityResult()
     result.total_sobol_indices = ST
