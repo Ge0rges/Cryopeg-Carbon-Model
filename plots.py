@@ -56,10 +56,11 @@ def plot_multiple_scenarios(analyses: [Analysis], color_cycle: int = None):
     Returns a figure.
     """
 
-    # Get the right color for plot decomposition
+    # Get the right color and dashes for plot decomposition
     cm = sns.color_palette("Paired")
     cp = [cm[11], cm[7], cm[1]]
     cp = cp if color_cycle is None else [cp[color_cycle]]
+    dashes = [(2, 1), (5, 5), (1, 1), (4, 3)]
 
     # Build the dataframes for each category then melt them
     all_data = pd.DataFrame()
@@ -72,7 +73,7 @@ def plot_multiple_scenarios(analyses: [Analysis], color_cycle: int = None):
 
     # Plot
     grid = sns.relplot(data=melted_data, x="Years from start", y="value", palette=cp, aspect=0.7,
-                       col="Data type", hue="Scenario", style="Analysis type", dashes=[(2, 1), (5, 5), (1, 1), (4, 3)],
+                       col="Data type", hue="Scenario", style="Analysis type", dashes=dashes,
                        kind="line", facet_kws={'sharey': False, 'sharex': True, "xlim": [0.01, 10 ** 5]})
 
     grid.set(xscale="log", yscale="log")
@@ -99,45 +100,25 @@ def plot_sensitivity(analysis: Analysis):
     if analysis.sensitivity_analysis_result is None:
         return None
 
-    p_names = analysis.scenario._paramater_names
-    ST = analysis.sensitivity_analysis_result.total_sobol_indices
-    S1 = analysis.sensitivity_analysis_result.first_order_sobol_indices
-
-    # Filter out zeros (analysis wasn't run)
-    indices = []
-    for i, x in enumerate(p_names):
-        if ST[i] != 0:
-            indices.append(i)
-
-    ST = ST[indices]
-    S1 = S1[indices]
-    p_names = np.asarray(p_names)[indices]
-
     # Make plot
-    fig, axs = plt.subplots(1, 1)
+    df = analysis.sensitivity_analysis_result.get_dataframe(analysis.scenario)
+    df = df.melt(id_vars=["Paramater name"], value_vars=["Total-effect", "First-order"], var_name=("Sobol index"))
 
-    # Set position of bar on X axis
-    barWidth = 0.28
-    br1 = np.arange(len(ST))
-    br2 = [x + barWidth for x in br1]
+    grid = sns.catplot(data=df, x="Paramater name", y="value", hue="Sobol index", kind="bar", aspect=1.4, legend_out=False)
 
-    # Total sobol index
-    axs.bar(br1, ST, width=barWidth, label="Total-effect")
-    axs.bar(br2, S1, width=barWidth, label="First-order")
+    # for ax, label in zip(grid.axes.ravel(), df["Sobol index"]):
+    #     ax.bar_label(str(label))
 
-    for index in range(len(br1)):
-        axs.text(br1[index] - barWidth/2, ST[index]+0.01, "%.2f" % ST[index])
-        axs.text(br2[index] - barWidth/2, S1[index]+0.01, "%.2f" % S1[index])
+    # Add labels
+    for ax in grid.axes.ravel():
+        for c in ax.containers:
+            labels = [f'{v.get_height():.2f}' for v in c]
+            ax.bar_label(c, labels=labels, label_type='edge')
+        ax.margins(y=0.2)
 
-    axs.set_xlabel('Organism parameter')
-    axs.set_ylabel("Sobol Index")
-    axs.set_xticks([r + barWidth for r in range(len(ST))], p_names)
+    grid.tight_layout()
 
-    axs.legend(loc=0)
-
-    fig.tight_layout()
-
-    return fig
+    return grid
 
 
 def hypothetical_growth_scenarios():

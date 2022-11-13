@@ -103,7 +103,7 @@ def log_results(analyses, savelog=True):
     # Make a plot for each scenario, and then one with all scenarios
     sc_index = int(len(analyses) / len(scenarios))
 
-    individual_scenarios = [plot_multiple_scenarios(analyses[i-1:sc_index*i], color_cycle=i) for i in range(1, len(scenarios))]
+    individual_scenarios = [plot_multiple_scenarios(analyses[(i-1)*sc_index:sc_index*i], color_cycle=i-1) for i in range(1, len(scenarios)+1)]
     scenarios_fig = plot_multiple_scenarios(analyses)
 
     if savelog:  # Plots folder must exist in same directory as main.py

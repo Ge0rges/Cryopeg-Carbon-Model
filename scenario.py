@@ -55,11 +55,10 @@ class Scenario:
     # _paramater_bounds = [None, None, None, [1e5, 1e9], None,  # Ordered bounds for sensitivty analysis
     #                      None, None, None, None, None, None, None, None, None, None, [1, 1e9], None]
 
-    _paramater_names = ["μ", "Maintenance energy", "DOC/cell", "Carrying capacity", "pOC input rate",
-                        "dOC input rate", "Inorganic carbon input rate", "Inorganic carbon fixation rate", "IC/cell",
-                        "EEA rate", "Kd", "Punctual organic carbon addition",
-                        # IVP
-                        "Starting POC", "Starting DOC", "Start IC", "Start cell density", "Timespan"]
+    _paramater_names = ["$μ_{max}$", "$m$", "$\\alpha_D$", "$N_{max}$", "$P_{in}$",
+                        "$D_{in}$", "$I_{in}$", "$I_{xr}$", "$\alpha_I$",
+                        "$\\gamma_{cell}$", "$K_d$", "Punctual organic carbon addition",
+                        "$P_0$", "$D_0$", "$I_0$", "$N_0$", "Timespan"]  # IVP
 
     # Methods
     def get_julia_ordered_paramaters(self):

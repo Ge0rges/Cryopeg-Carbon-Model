@@ -35,6 +35,29 @@ class SensitivityResult:
     total_sobol_indices: [float] = None
     first_order_sobol_indices: [float] = None
 
+    def get_dataframe(self, scenario):
+        """
+        Returns model results as a dataframe. Removes values that are exactly 0 (SA wasn't run).
+        """
+        p_names = scenario._paramater_names
+        ST = self.total_sobol_indices
+        S1 = self.first_order_sobol_indices
+
+        # Filter out zeros (analysis wasn't run)
+        indices = []
+        for i, x in enumerate(p_names):
+            if ST[i] != 0:
+                indices.append(i)
+
+        ST = ST[indices]
+        S1 = S1[indices]
+        p_names = np.asarray(p_names)[indices]
+
+        data = [p_names, ST, S1]
+        df = pandas.DataFrame(data=np.column_stack(data), columns=["Paramater name", "Total-effect", "First-order"])
+
+        return df.astype({"Paramater name": str, "Total-effect": float, "First-order": float})
+
 
 class ModelResult:
     """
