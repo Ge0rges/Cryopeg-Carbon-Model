@@ -31,7 +31,7 @@ class Scenario:
 
     # Constants - Common to all Scenarios
     _start_cell = 10 ** 5  # Average cells/mL order of magnitue for sea-ice (Cooper et al. 2019)
-    _carrying_capacity = 10 ** 8  # cells/mL - Maximum cell density.
+    _carrying_capacity = 10 ** 9  # cells/mL - Maximum cell density.
     _growth_rate = None  # 1/day - Growth rate used by the model.
 
     _particulate_organic_carbon_input_rate = 0  # fg C/(mL x day) - Particulate organic carbon input per day.
