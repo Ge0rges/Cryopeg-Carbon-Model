@@ -60,7 +60,7 @@ def plot_multiple_scenarios(analyses: [Analysis], color_cycle: int = None):
     cm = sns.color_palette("Paired")
     cp = [cm[11], cm[7], cm[1]]
     cp = cp if color_cycle is None else [cp[color_cycle]]
-    dashes = [(2, 1), (5, 5), (1, 1), (4, 3)]
+    dashes = [(2, 1), (5, 5), (1, 1), (4, 3)] if len(analyses) <= 4 else None
 
     # Build the dataframes for each category then melt them
     all_data = pd.DataFrame()

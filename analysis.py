@@ -71,7 +71,7 @@ class Analysis:
 
         self._variable_title = "Min μ - " if use_minimum_growth_rate else "Max μ - "
         self._variable_title += "Low ME - " if use_me_lower_bound else "High ME - "
-        self._variable_title += "Measured EEA" if use_eea_average else "Calculated EEA"
+        self._variable_title += "Calculated EEA" if use_eea_average else "Measured EEA"
 
         self.title = self.scenario.title + " - " + self._variable_title
         return
