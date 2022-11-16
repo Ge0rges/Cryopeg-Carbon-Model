@@ -73,16 +73,19 @@ def plot_multiple_scenarios(analyses: [Analysis], color_cycle: int = None):
 
     # Plot
     grid = sns.relplot(data=melted_data, x="Years from start", y="value", palette=cp, aspect=0.7,
-                       col="Data type", hue="Scenario", style="Analysis type", dashes=dashes,
+                       col="Data type", row="Analysis type", hue="Scenario", style="Analysis type", dashes=dashes,
                        kind="line", facet_kws={'sharey': False, 'sharex': True, "xlim": [0.01, 10 ** 5]})
 
-    grid.set(xscale="log", yscale="log")
+    grid.set(xscale="log")
     grid.set_titles(template="{col_name} over time")
 
-    # Tune relplot
+    # Tune relplot labels
     y_labels = ["femtograms C/mL"] * 3 + ["cells/mL"]
     y_lim = [[1, 10 ** 14]] * 3 + [[1, 10 ** 10]]
-    for ax, label, lim in zip(grid.axes.ravel(), y_labels, y_lim):
+    for i, ax in enumerate(grid.axes.ravel()):
+        label = y_labels[i%len(y_labels)]
+        lim = y_lim[i%len(y_lim)]
+
         ax.set_ylabel(label)
         ax.set_yscale("log")
         ax.set_ylim(lim)

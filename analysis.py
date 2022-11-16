@@ -41,6 +41,7 @@ class Analysis:
 
     _use_minimum_growth_rate: bool = None
     _use_me_lower_bound: bool = None
+    _use_eea_average: bool = None
 
     maintenance_energy_result: MaintenanceResult = None
     sensitivity_analysis_result: SensitivityResult = None
@@ -52,20 +53,25 @@ class Analysis:
     title = None
     _variable_title = None
 
-    def __init__(self, scenario: Scenario, use_minimum_growth_rate: bool, use_me_lower_bound: bool):
+    def __init__(self, scenario: Scenario, use_minimum_growth_rate: bool, use_me_lower_bound: bool, use_eea_average: bool):
         """
         Initiates the analysis and construts its title.
         """
         self.scenario = copy.deepcopy(scenario)
         self._use_minimum_growth_rate = use_minimum_growth_rate
         self._use_me_lower_bound = use_me_lower_bound
+        self._use_eea_average = use_eea_average
 
-        # Invalidate any growth rate present, we need to calcualte it
+        # Invalidate any rates present, we need to calcualte it
         if self._use_minimum_growth_rate:
             self.scenario._growth_rate = None
 
+        if self._use_eea_average:
+            self.scenario._eea_rate = None
+
         self._variable_title = "Min μ - " if use_minimum_growth_rate else "Max μ - "
-        self._variable_title += "Low ME" if use_me_lower_bound else "High ME"
+        self._variable_title += "Low ME - " if use_me_lower_bound else "High ME - "
+        self._variable_title += "Measured EEA" if use_eea_average else "Calculated EEA"
 
         self.title = self.scenario.title + " - " + self._variable_title
         return
@@ -76,14 +82,24 @@ class Analysis:
         Runs all analyses including sensitivity analysis if requested. Configures the scenario's growth rate and
         maintenance energy as required by the analysis. Stores all results in the class.
         """
-        # Estimate bounds for maintenance energy
+        # Calculate bounds for maintenance energy
         self.maintenance_energy_result = estimate_me_bounds(self.scenario)
+
+        # Calculate EEA rate bounds
+        self.eea_estimation = estimate_eea_rate(self.scenario)
 
         # Switch out growth rate to calcualted one if required
         self.scenario._growth_rate = self.maintenance_energy_result.minimum_growth_rate if self._use_minimum_growth_rate else self.scenario.lab_growth_rate
 
         # Switch out maintenance energy based on paramater
         self.scenario.maintenance_per_cell = self.maintenance_energy_result.lower_bound_me if self._use_me_lower_bound else self.maintenance_energy_result.upper_bound_me
+
+        # Switch out EEA rate based on paramater
+        average_eea = (self.eea_estimation.eea_lower + self.eea_estimation.eea_upper)/2
+        self.scenario._eea_rate = average_eea if self._use_eea_average else self.scenario._eea_rate
+
+        # Calculate the growth yield
+        self.growth_yield = calculate_growth_yield(self.scenario)
 
         # Run the model through PyJulia using the lower ME
         print(self.title)
@@ -95,12 +111,6 @@ class Analysis:
 
         # Run the sensitivity analysis
         self.sensitivity_analysis_result = run_sensitivity_analysis(self.scenario) if do_sensitivity_analysis else None
-
-        # Calculate EEA rate bounds
-        self.eea_estimation = estimate_eea_rate(self.scenario)
-
-        # Calculate the growth yield
-        self.growth_yield = calculate_growth_yield(self.scenario)
 
 
 def estimate_me_bounds(scenario: Scenario):
@@ -187,14 +197,15 @@ def estimate_eea_rate(scenario: Scenario):
     eea_lower = poc_converted/(end_cell * timespan)
 
     # Calculate the timespan the EEA rate in-use
-    eq = Eq(integrate(N, (t, 0, p)), poc_converted/scenario._eea_rate)
-
-    predicted_timespan = solveset(eq, p, domain=Reals)
+    predicted_timespan = -1
+    if scenario._eea_rate is not None:
+        eq = Eq(integrate(N, (t, 0, p)), poc_converted/scenario._eea_rate)
+        predicted_timespan = solveset(eq, p, domain=Reals).args[0]
 
     result = EEAResult()
     result.eea_upper = eea_upper
     result.eea_lower = eea_lower
-    result.predicted_timespan = predicted_timespan.args[0]
+    result.predicted_timespan = predicted_timespan
 
     return result
 
