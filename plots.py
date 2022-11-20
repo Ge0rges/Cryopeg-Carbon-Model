@@ -48,8 +48,62 @@ def plot_model(analysis: Analysis):
 
     return fig
 
+def plot_all_scenarios_all_analyses(analyses: [Analysis], color_cycle: int = None):
+    """
+    Plots the results of many model outputs in one figure. In one figure, creates three subplots.
+    Each subplot is an overlay of organic carbon, inorganic carbon, and cell densities, from each result.
+    Returns a figure.
+    """
 
-def plot_multiple_scenarios(analyses: [Analysis], color_cycle: int = None):
+    # Get the right color and dashes for plot decomposition
+    cm = sns.color_palette("Paired")
+    cp = ["#70381D", cm[7], "#74B6C2"]
+    cp = cp if color_cycle is None else [cp[color_cycle]]
+    # dashes = [(2, 1), (5, 5), (1, 1), (4, 3)] if len(analyses) <= 4 else None
+
+    # Build the dataframes for each category then melt them
+    all_data = pd.DataFrame()
+    for analysis in analyses:
+        data = analysis.model_result.get_dataframe(analysis.scenario.title, analysis._variable_title)
+        all_data = pd.concat([all_data, data]).reset_index(drop=True)
+
+    melted_data = all_data.melt(id_vars=["Years from start", "Scenario", "Analysis type"],
+                                value_vars=["POC", "DOC", "IC", "Cells"], var_name=("Data type"))
+
+    # Plot
+    grid = sns.relplot(data=melted_data, x="Years from start", y="value", palette=cp, aspect=0.7,
+                       col="Data type", row="Analysis type", hue="Scenario",  # style="Analysis type", dashes=dashes,
+                       kind="line", facet_kws={'sharey': False, 'sharex': False, "margin_titles": True,
+                                               "legend_out": False})
+
+    grid.set(xscale="log")
+    grid.set_titles(template="{col_name} over time", row_template="{row_name}", col_template="{col_name} over time")
+
+    # Tune relplot labels
+    y_labels = ["femtograms C/mL"] * 3 + ["cells/mL"]
+    y_lim = [[1, 10 ** 14]] * 3 + [[1, 10 ** 10]]
+    for i, ax in enumerate(grid.axes.ravel()):
+        if i < 4:
+            label = y_labels[i % len(y_labels)]
+            ax.set_ylabel(label)
+            ax.set_xlabel("Years from start")
+        else:
+            ax.set_ylabel("")
+            ax.set_xlabel("")
+
+        lim = y_lim[i % len(y_lim)]
+        ax.set_yscale("log")
+        ax.set_xscale("log")
+        ax.set_ylim(lim)
+        ax.set_xlim([0.01, 10 ** 5])
+
+    grid.tight_layout()
+    grid.fig.subplots_adjust(hspace=0.2, wspace=0.4)
+
+    return grid
+
+
+def plot_multiple_scenarios_one_row(analyses: [Analysis], color_cycle: int = None):
     """
     Plots the results of many model outputs in one figure. In one figure, creates three subplots.
     Each subplot is an overlay of organic carbon, inorganic carbon, and cell densities, from each result.
@@ -73,7 +127,7 @@ def plot_multiple_scenarios(analyses: [Analysis], color_cycle: int = None):
 
     # Plot
     grid = sns.relplot(data=melted_data, x="Years from start", y="value", palette=cp, aspect=0.7,
-                       col="Data type", row="Analysis type", hue="Scenario", style="Analysis type", dashes=dashes,
+                       col="Data type", hue="Scenario", style="Analysis type", dashes=dashes,
                        kind="line", facet_kws={'sharey': False, 'sharex': True, "xlim": [0.01, 10 ** 5]})
 
     grid.set(xscale="log")

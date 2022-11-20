@@ -16,7 +16,7 @@ from scenario import *
 from plots import *
 
 
-def log_results(analyses, savelog=True):
+def log_results(analyses):
     """
     Displays or saves the plots for each analysis done. Prints or save endpoints of model and maintenance energy
     calculations. Saves plots and values to disk if savelog is true.
@@ -94,27 +94,27 @@ def log_results(analyses, savelog=True):
             print(values)
 
     # Write the values to CSV if required
-    if savelog:
-        with open('Results/values.csv', 'w+') as f:
-            write = csv.writer(f)
-            write.writerow(csv_header)
-            write.writerows(csv_rows)
+    with open('Results/values.csv', 'w+') as f:
+        write = csv.writer(f)
+        write.writerow(csv_header)
+        write.writerows(csv_rows)
 
-    # Make a plot for each scenario, and then one with all scenarios
-    sc_index = int(len(analyses) / len(scenarios))
+    # Plot for selected analyses
+    selected_analyses = []
+    for analysis in analyses:
+        if analysis.title is in ["Min μ - High ME - Measured EEA", "Max μ - Low ME - Measured EEA"]:
+            selected_analyses.append(analysis)
 
-    individual_scenarios = [plot_multiple_scenarios(analyses[(i-1)*sc_index:sc_index*i], color_cycle=i-1) for i in range(1, len(scenarios)+1)]
-    scenarios_fig = plot_multiple_scenarios(analyses)
+    sc_index = int(len(selected_analyses) / len(scenarios))
+    individual_scenarios = [plot_multiple_scenarios_one_row(selected_analyses[(i-1)*sc_index:sc_index*i], color_cycle=i-1) for i in range(1, len(scenarios)+1)]
 
-    if savelog:  # Plots folder must exist in same directory as main.py
+    # Plot for all scenarios all analyses
+    all_analyses_fig = plot_all_scenarios_all_analyses(analyses)
 
-        for i, fig in enumerate(individual_scenarios):
-            fig.savefig("Results/pair"+str(i)+"_scenarios_model.pdf", format="pdf", dpi=500)
+    for i, fig in enumerate(individual_scenarios):
+        fig.savefig("Results/pair"+str(i)+"_scenarios_model.pdf", format="pdf", dpi=500)
 
-        scenarios_fig.savefig("Results/all_scenarios_model.pdf", format="pdf", dpi=500)
-
-    else:  # Show the figures
-        scenarios_fig.show()
+    all_analyses_fig.savefig("Results/all_model_outputs.pdf", format="pdf", dpi=500)
 
     return
 
@@ -126,10 +126,10 @@ if __name__ == "__main__":  # Generates all figures and data points.
 
     # On every scenario, try every analysis configuration. Run a sensitivity analysis only on the first one.
     do_SA = False
-    for scenario in scenarios:
-        for use_minimum_growth_rate in [True, False]:
-            for use_me_lower_bound in [True, False]:
-                for use_eea_average in [True, False]:
+    for use_minimum_growth_rate in [True, False]:
+        for use_me_lower_bound in [True, False]:
+            for use_eea_average in [True, False]:
+                for scenario in scenarios:
                     a = Analysis(scenario, use_minimum_growth_rate, use_me_lower_bound, use_eea_average)
 
                     # Run SA on first config pair - first scenario, only.
@@ -139,7 +139,7 @@ if __name__ == "__main__":  # Generates all figures and data points.
                     all_analyses.append(a)
 
     # Save plots and values of all results.
-    log_results(all_analyses, savelog=True)
+    log_results(all_analyses)
 
     # Generate the hypothetical growth scenarios figure.
     hg_fig = hypothetical_growth_scenarios()
