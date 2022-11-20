@@ -74,24 +74,15 @@ def log_results(analyses):
                   np.format_float_scientific(analysis.expansion_result.ratio_dimensions, precision=2)]
 
         # Save plots and write values to CSV
-        if savelog:
-            # Make a plots folder is it doesn't exist
-            if not os.path.exists("Results/"):
-                os.mkdir('Results/')
+        # Make a plots folder is it doesn't exist
+        if not os.path.exists("Results/"):
+            os.mkdir('Results/')
 
-            model_fig.savefig("Results/" + analysis.title + "_model.pdf", format="pdf", dpi=500)
-            csv_rows.append(values)
+        model_fig.savefig("Results/" + analysis.title + "_model.pdf", format="pdf", dpi=500)
+        csv_rows.append(values)
 
-            if sa_fig:
-                sa_fig.savefig("Results/" + analysis.title + "_sa.pdf", format="pdf", dpi=500)
-
-        else:
-            model_fig.show()
-            if sa_fig:
-                sa_fig.show()
-
-            print(csv_header)
-            print(values)
+        if sa_fig:
+            sa_fig.savefig("Results/" + analysis.title + "_sa.pdf", format="pdf", dpi=500)
 
     # Write the values to CSV if required
     with open('Results/values.csv', 'w+') as f:
@@ -102,7 +93,7 @@ def log_results(analyses):
     # Plot for selected analyses
     selected_analyses = []
     for analysis in analyses:
-        if analysis.title is in ["Min μ - High ME - Measured EEA", "Max μ - Low ME - Measured EEA"]:
+        if any(map(analysis.title.__contains__, ["Min μ - High ME - Measured EEA", "Max μ - Low ME - Measured EEA"])):
             selected_analyses.append(analysis)
 
     sc_index = int(len(selected_analyses) / len(scenarios))
@@ -110,11 +101,13 @@ def log_results(analyses):
 
     # Plot for all scenarios all analyses
     all_analyses_fig = plot_all_scenarios_all_analyses(analyses)
+    single_datatype_plot_cells = plot_one_result_type_all_analyses(analyses, "Cells", 0)
 
     for i, fig in enumerate(individual_scenarios):
         fig.savefig("Results/pair"+str(i)+"_scenarios_model.pdf", format="pdf", dpi=500)
 
     all_analyses_fig.savefig("Results/all_model_outputs.pdf", format="pdf", dpi=500)
+    single_datatype_plot_cells.savefig("Results/all_model_outputs_just_cells_.pdf", format="pdf", dpi=500)
 
     return
 

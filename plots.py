@@ -50,9 +50,8 @@ def plot_model(analysis: Analysis):
 
 def plot_all_scenarios_all_analyses(analyses: [Analysis], color_cycle: int = None):
     """
-    Plots the results of many model outputs in one figure. In one figure, creates three subplots.
-    Each subplot is an overlay of organic carbon, inorganic carbon, and cell densities, from each result.
-    Returns a figure.
+    Plots the results of many model outputs in one figure. In one figure, creates four columns, one for each data type.
+    Each row is a analysis. Returns a figure.
     """
 
     # Get the right color and dashes for plot decomposition
@@ -105,8 +104,9 @@ def plot_all_scenarios_all_analyses(analyses: [Analysis], color_cycle: int = Non
 
 def plot_multiple_scenarios_one_row(analyses: [Analysis], color_cycle: int = None):
     """
-    Plots the results of many model outputs in one figure. In one figure, creates three subplots.
+    Plots the results of many model outputs in one figure. In one figure, creates four subplots.
     Each subplot is an overlay of organic carbon, inorganic carbon, and cell densities, from each result.
+    Color_cycle shifts the color map to the selected index, used to plot one type of scenario.
     Returns a figure.
     """
 
@@ -147,6 +147,62 @@ def plot_multiple_scenarios_one_row(analyses: [Analysis], color_cycle: int = Non
     return grid.tight_layout()
 
 
+def plot_one_result_type_all_analyses(analyses: [Analysis], data_type: str, main_index: int = 0, color_cycle: int = None):
+    """
+    Plots one data type result from each analysis.  Data_type string sets which result type to plot.
+    If main_index is set to an index in Analyses, that result is plotted across multiple rows in its own column.
+    Color_cycle shifts the color map to the selected index, used to plot one type of scenario.
+    Returns a figure.
+    """
+    # Get the right color and dashes for plot decomposition
+    cm = sns.color_palette("Paired")
+    cp = ["#70381D", cm[7], "#74B6C2"]
+    cp = cp if color_cycle is None else [cp[color_cycle]]
+
+    # Move the main_analysis to front
+    analyses.insert(0, analyses.pop(main_index))
+
+    # Build the dataframes for each category then melt them
+    all_data = pd.DataFrame()
+    for analysis in analyses:
+        data = analysis.model_result.get_dataframe(analysis.scenario.title, analysis._variable_title)
+        all_data = pd.concat([all_data, data]).reset_index(drop=True)
+
+    melted_data = all_data.melt(id_vars=["Years from start", "Scenario", "Analysis type"],
+                                value_vars=[data_type], var_name=("Data type"))
+
+    # Plot
+    grid = sns.relplot(data=melted_data, x="Years from start", y="value", palette=cp, aspect=0.7,
+                       col="Analysis type", hue="Scenario", kind="line", col_wrap=4,
+                       facet_kws={'sharey': True, 'sharex': True, "legend_out": False})
+
+    grid.set_titles(template="{col_name}")
+    grid.set(xscale="log")
+
+    # Tune relplot labels
+    y_label = "cells/mL" if data_type == "Cells" else "femtograms C/mL"
+    y_lim = [1, 10 ** 10] if data_type == "Cells" else [1, 10 ** 14]
+    for i, ax in enumerate(grid.axes.ravel()):
+        # if i < 4:
+        #     ax.set_ylabel(label)
+        #     ax.set_xlabel("Years from start")
+        # else:
+        #     ax.set_ylabel("")
+        #     ax.set_xlabel("")
+
+        ax.set_ylabel(y_label)
+
+        ax.set_yscale("log")
+        ax.set_xscale("log")
+        ax.set_ylim(y_lim)
+        ax.set_xlim([0.01, 10 ** 5])
+
+    grid.tight_layout()
+    grid.fig.subplots_adjust(wspace=0.4)
+
+    return grid
+
+
 def plot_sensitivity(analysis: Analysis):
     """
     Plots the results of a sensitivity analysis as a bar growth per variable. Includes both total and first order
@@ -159,9 +215,9 @@ def plot_sensitivity(analysis: Analysis):
 
     # Make plot
     df = analysis.sensitivity_analysis_result.get_dataframe(analysis.scenario)
-    df = df.melt(id_vars=["Paramater name"], value_vars=["Total-effect", "First-order"], var_name=("Sobol index"))
+    df = df.melt(id_vars=["Parameter"], value_vars=["Total-effect", "First-order"], var_name=("Sobol index"))
 
-    grid = sns.catplot(data=df, x="Paramater name", y="value", hue="Sobol index", kind="bar", aspect=1.4, legend_out=False)
+    grid = sns.catplot(data=df, x="Parameter", y="value", hue="Sobol index", kind="bar", aspect=1.4, legend_out=False)
 
     # for ax, label in zip(grid.axes.ravel(), df["Sobol index"]):
     #     ax.bar_label(str(label))
