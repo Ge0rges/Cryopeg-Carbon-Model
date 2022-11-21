@@ -107,7 +107,7 @@ def log_results(analyses):
         fig.savefig("Results/pair"+str(i)+"_scenarios_model.pdf", format="pdf", dpi=500)
 
     all_analyses_fig.savefig("Results/all_model_outputs.pdf", format="pdf", dpi=500)
-    single_datatype_plot_cells.savefig("Results/all_model_outputs_just_cells_.pdf", format="pdf", dpi=500)
+    single_datatype_plot_cells.savefig("Results/all_model_outputs_just_cells.pdf", format="pdf", dpi=500)
 
     return
 
@@ -118,7 +118,7 @@ if __name__ == "__main__":  # Generates all figures and data points.
     all_analyses = []
 
     # On every scenario, try every analysis configuration. Run a sensitivity analysis only on the first one.
-    do_SA = False
+    do_SA = True
     for use_minimum_growth_rate in [True, False]:
         for use_me_lower_bound in [True, False]:
             for use_eea_average in [True, False]:

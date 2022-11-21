@@ -34,6 +34,8 @@ class SensitivityResult:
     """
     total_sobol_indices: [float] = None
     first_order_sobol_indices: [float] = None
+    total_conf_int: [[float]] = None
+    first_order_conf_int: [[float]] = None
 
     def get_dataframe(self, scenario):
         """
@@ -54,9 +56,9 @@ class SensitivityResult:
         p_names = np.asarray(p_names)[indices]
 
         data = [p_names, ST, S1]
-        df = pandas.DataFrame(data=np.column_stack(data), columns=["Paramater name", "Total-effect", "First-order"])
+        df = pandas.DataFrame(data=np.column_stack(data), columns=["Parameter", "Total-effect", "First-order"])
 
-        return df.astype({"Paramater name": str, "Total-effect": float, "First-order": float})
+        return df.astype({"Parameter": str, "Total-effect": float, "First-order": float})
 
 
 class ModelResult:

@@ -217,17 +217,13 @@ def plot_sensitivity(analysis: Analysis):
     df = analysis.sensitivity_analysis_result.get_dataframe(analysis.scenario)
     df = df.melt(id_vars=["Parameter"], value_vars=["Total-effect", "First-order"], var_name=("Sobol index"))
 
-    grid = sns.catplot(data=df, x="Parameter", y="value", hue="Sobol index", kind="bar", aspect=1.4, legend_out=False)
-
-    # for ax, label in zip(grid.axes.ravel(), df["Sobol index"]):
-    #     ax.bar_label(str(label))
+    grid = sns.catplot(data=df, x="Parameter", y="value", hue="Sobol index", kind="bar", aspect=1.8, legend_out=False)
 
     # Add labels
     for ax in grid.axes.ravel():
         for c in ax.containers:
-            labels = [f'{v.get_height():.2f}' for v in c]
-            ax.bar_label(c, labels=labels, label_type='edge')
-        ax.margins(y=0.2)
+            labels = [f'{v.get_height():.2f}' if v.get_height() >= 0.01 else "<0.01" for v in c]
+            ax.bar_label(c, labels=labels, label_type='edge')#, padding=0.2)
 
     grid.tight_layout()
 
