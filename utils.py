@@ -44,21 +44,35 @@ class SensitivityResult:
         p_names = scenario._paramater_names
         ST = self.total_sobol_indices
         S1 = self.first_order_sobol_indices
+        st_err = self.total_conf_int
+        s1_err = self.first_order_conf_int
 
-        # Filter out zeros (analysis wasn't run)
-        indices = []
-        for i, x in enumerate(p_names):
-            if ST[i] != 0:
-                indices.append(i)
+        # # Filter out zeros (analysis wasn't run)
+        # indices = []
+        # for i, x in enumerate(p_names):
+        #     if ST[i] != 0:
+        #         indices.append(i)
 
-        ST = ST[indices]
-        S1 = S1[indices]
-        p_names = np.asarray(p_names)[indices]
+        # ST = ST[indices]
+        # S1 = S1[indices]
+        # p_names = np.asarray(p_names)[indices]
 
-        data = [p_names, ST, S1]
-        df = pandas.DataFrame(data=np.column_stack(data), columns=["Parameter", "Total-effect", "First-order"])
+        df = []
+        for row in range(len(p_names[0:-len(scenario.get_julia_ordered_ivp())])):
+            if all(ST[i, row] == 0 or np.isnan(ST[i, row]) for i in range(4)):
+                continue
 
-        return df.astype({"Parameter": str, "Total-effect": float, "First-order": float})
+            for i, output in enumerate(["P", "D", "I", "N"]):
+                if output == "N":
+                    df.append([p_names[row], output, 0, 0, 0, 0])
+                else:
+                    df.append([p_names[row], output, ST[i, row], S1[i, row], st_err[i, row], s1_err[i, row]])
+
+        df = pandas.DataFrame(data=df, columns=["Parameter", "Output", "Total-effect", "First-order",
+                                                                   "Total Error", "First Error"])
+
+        return df.astype({"Parameter": str, "Output": str, "Total-effect": float, "First-order": float,
+                          "Total Error": float, "First Error": float})
 
 
 class ModelResult:

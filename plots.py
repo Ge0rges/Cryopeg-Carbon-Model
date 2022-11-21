@@ -2,11 +2,13 @@
 Contains the functions that plot various results using matplotlib and seaborn.
 """
 
+from analysis import Analysis
+from math import floor
+
 import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
-from analysis import Analysis
 import pandas as pd
 
 matplotlib.use('TkAgg')
@@ -137,8 +139,8 @@ def plot_multiple_scenarios_one_row(analyses: [Analysis], color_cycle: int = Non
     y_labels = ["femtograms C/mL"] * 3 + ["cells/mL"]
     y_lim = [[1, 10 ** 14]] * 3 + [[1, 10 ** 10]]
     for i, ax in enumerate(grid.axes.ravel()):
-        label = y_labels[i%len(y_labels)]
-        lim = y_lim[i%len(y_lim)]
+        label = y_labels[i % len(y_labels)]
+        lim = y_lim[i % len(y_lim)]
 
         ax.set_ylabel(label)
         ax.set_yscale("log")
@@ -215,15 +217,37 @@ def plot_sensitivity(analysis: Analysis):
 
     # Make plot
     df = analysis.sensitivity_analysis_result.get_dataframe(analysis.scenario)
-    df = df.melt(id_vars=["Parameter"], value_vars=["Total-effect", "First-order"], var_name=("Sobol index"))
+    err_df = df.melt(id_vars=["Parameter", "Output"], value_vars=["Total Error", "First Error"], var_name=("Error"))
+    print(err_df)
+    df = df.melt(id_vars=["Parameter", "Output"], value_vars=["Total-effect", "First-order"], var_name=("Sobol index"))
 
-    grid = sns.catplot(data=df, x="Parameter", y="value", hue="Sobol index", kind="bar", aspect=1.8, legend_out=False)
+    grid = sns.catplot(data=df, x="Parameter", y="value", col="Output", col_wrap=2,
+                       hue="Sobol index", kind="bar", aspect=1.8, legend_out=False)
 
-    # Add labels
-    for ax in grid.axes.ravel():
+    # Add labels and errors bars
+    for ax, var in zip(grid.axes.ravel(), ["P", "D", "I", "N"]):
+        widths = []
+        heights = []
+        errors = []
         for c in ax.containers:
-            labels = [f'{v.get_height():.2f}' if v.get_height() >= 0.01 else "<0.01" for v in c]
-            ax.bar_label(c, labels=labels, label_type='edge')#, padding=0.2)
+
+            labels = []
+            j = 0
+            for i, v in enumerate(c):
+                widths.append(v.get_width())
+                heights.append(v.get_height())
+
+                if i % 2 == 0:
+                    errors.append(err_df[err_df["Output"] == var][err_df["Error"] == "Total Error"]["value"].values[j])
+                else:
+                    errors.append(err_df[err_df["Output"] == var][err_df["Error"] == "First Error"]["value"].values[j])
+                    j += 1
+
+                labels.append(f'{v.get_height():.2f}' if v.get_height() >= 0.01 else "<0.01")
+
+            ax.bar_label(c, labels=labels, label_type='edge')
+
+        ax.errorbar(widths, heights, yerr=errors)
 
     grid.tight_layout()
 
