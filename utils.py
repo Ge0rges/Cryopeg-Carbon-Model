@@ -46,20 +46,10 @@ class SensitivityResult:
         S1 = self.first_order_sobol_indices
         st_err = self.total_conf_int
         s1_err = self.first_order_conf_int
-
-        # # Filter out zeros (analysis wasn't run)
-        # indices = []
-        # for i, x in enumerate(p_names):
-        #     if ST[i] != 0:
-        #         indices.append(i)
-
-        # ST = ST[indices]
-        # S1 = S1[indices]
-        # p_names = np.asarray(p_names)[indices]
-
+       
         df = []
         for row in range(len(p_names[0:-len(scenario.get_julia_ordered_ivp())])):
-            if all(ST[i, row] == 0 or np.isnan(ST[i, row]) for i in range(4)):
+            if all(ST[i, row] == 0 for i in range(4)):
                 continue
 
             for i, output in enumerate(["P", "D", "I", "N"]):

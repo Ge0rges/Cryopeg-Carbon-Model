@@ -218,7 +218,6 @@ def plot_sensitivity(analysis: Analysis):
     # Make plot
     df = analysis.sensitivity_analysis_result.get_dataframe(analysis.scenario)
     err_df = df.melt(id_vars=["Parameter", "Output"], value_vars=["Total Error", "First Error"], var_name=("Error"))
-    print(err_df)
     df = df.melt(id_vars=["Parameter", "Output"], value_vars=["Total-effect", "First-order"], var_name=("Sobol index"))
 
     grid = sns.catplot(data=df, x="Parameter", y="value", col="Output", col_wrap=2,
