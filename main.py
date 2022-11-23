@@ -30,7 +30,7 @@ def log_results(analyses):
 
     for analysis in analyses:
         # Individual plots & Sensitivity analysis
-        model_fig = plot_model(analysis)
+        model_fig = plot_one_analysis(analysis)
         sa_fig = plot_sensitivity(analysis)
 
         # Endpoints and ME values

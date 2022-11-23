@@ -53,14 +53,10 @@ class SensitivityResult:
                 continue
 
             for i, output in enumerate(["P", "D", "I", "N"]):
-                if output == "N":
-                    df.append([p_names[row], output, 0, 0, 0, 0])
-                else:
-                    df.append([p_names[row], output, ST[i, row], S1[i, row], st_err[i, row], s1_err[i, row]])
+                df.append([p_names[row], output, ST[i, row], S1[i, row], st_err[i, row], s1_err[i, row]])
 
         df = pandas.DataFrame(data=df, columns=["Parameter", "Output", "Total-effect", "First-order",
                                                                    "Total Error", "First Error"])
-
         return df.astype({"Parameter": str, "Output": str, "Total-effect": float, "First-order": float,
                           "Total Error": float, "First Error": float})
 

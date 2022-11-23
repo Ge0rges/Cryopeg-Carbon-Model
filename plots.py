@@ -15,40 +15,32 @@ matplotlib.use('TkAgg')
 sns.set_theme()
 
 
-def plot_model(analysis: Analysis):
+def plot_one_analysis(analysis: Analysis):
     """
     Plots the result of a model iteration: inorganic and organic carbon overlayed, and cell density seperately
     in one figure. Returns a figure.
     """
     # Make seaborn data frame
     data = analysis.model_result.get_dataframe(analysis.scenario.title, analysis._variable_title)
-    melted = pd.melt(data, id_vars=("Years from start"), value_vars=("POC", "DOC", "IC"), var_name=("Carbon type"),
-                     value_name=("femtograms C/mL"))
+    melted = pd.melt(data, id_vars="Years from start", value_vars=("POC", "DOC", "IC", "Cells"), var_name="Variable",
+                     value_name="femtograms C/mL or cells/mL")
 
     # Make figure
-    fig, axs = plt.subplots(1, 2, figsize=(8, 4))
-    sns.lineplot(data=melted, x="Years from start", y="femtograms C/mL", hue="Carbon type",
-                 palette=['brown', 'blue', 'black'], ax=axs[0])
-    sns.lineplot(data=data, x="Years from start", y="Cells", color="green", ax=axs[1])
+    grid = sns.relplot(data=melted, x="Years from start", y="femtograms C/mL or cells/mL", hue="Variable",
+                       palette=["brown", "blue", "black", "green"], kind="line")
 
-    axs[0].set_xscale('log')
-    axs[0].set_yscale('log')
-    axs[1].set_xscale('log')
-    axs[1].set_yscale('log')
+    grid.set(xscale="log", yscale="log")
+    grid.set_titles(template=analysis.title)
 
-    axs[0].set_ylim([1, 10 ** 14])
-    axs[0].set_xlim([0.01, 10 ** 5])
-    axs[1].set_ylim([1, 10 ** 10])
-    axs[1].set_xlim([0.01, 10 ** 5])
+    ax = grid.axes.ravel()[0]
 
-    axs[1].set_ylabel("cells/mL")
+    ax.set_ylim([1, 10 ** 14])
+    ax.set_xlim([0.01, 10 ** 5])
 
-    axs[0].set_title('Carbon over time')
-    axs[1].set_title('Cells over time')
+    grid.tight_layout()
 
-    fig.tight_layout()
+    return grid
 
-    return fig
 
 def plot_all_scenarios_all_analyses(analyses: [Analysis], color_cycle: int = None):
     """
@@ -69,7 +61,7 @@ def plot_all_scenarios_all_analyses(analyses: [Analysis], color_cycle: int = Non
         all_data = pd.concat([all_data, data]).reset_index(drop=True)
 
     melted_data = all_data.melt(id_vars=["Years from start", "Scenario", "Analysis type"],
-                                value_vars=["POC", "DOC", "IC", "Cells"], var_name=("Data type"))
+                                value_vars=["POC", "DOC", "IC", "Cells"], var_name="Data type")
 
     # Plot
     grid = sns.relplot(data=melted_data, x="Years from start", y="value", palette=cp, aspect=0.7,
@@ -125,7 +117,7 @@ def plot_multiple_scenarios_one_row(analyses: [Analysis], color_cycle: int = Non
         all_data = pd.concat([all_data, data]).reset_index(drop=True)
 
     melted_data = all_data.melt(id_vars=["Years from start", "Scenario", "Analysis type"],
-                                value_vars=["POC", "DOC", "IC", "Cells"], var_name=("Data type"))
+                                value_vars=["POC", "DOC", "IC", "Cells"], var_name="Data type")
 
     # Plot
     grid = sns.relplot(data=melted_data, x="Years from start", y="value", palette=cp, aspect=0.7,
@@ -171,7 +163,7 @@ def plot_one_result_type_all_analyses(analyses: [Analysis], data_type: str, main
         all_data = pd.concat([all_data, data]).reset_index(drop=True)
 
     melted_data = all_data.melt(id_vars=["Years from start", "Scenario", "Analysis type"],
-                                value_vars=[data_type], var_name=("Data type"))
+                                value_vars=[data_type], var_name="Data type")
 
     # Plot
     grid = sns.relplot(data=melted_data, x="Years from start", y="value", palette=cp, aspect=0.7,
@@ -185,13 +177,6 @@ def plot_one_result_type_all_analyses(analyses: [Analysis], data_type: str, main
     y_label = "cells/mL" if data_type == "Cells" else "femtograms C/mL"
     y_lim = [1, 10 ** 10] if data_type == "Cells" else [1, 10 ** 14]
     for i, ax in enumerate(grid.axes.ravel()):
-        # if i < 4:
-        #     ax.set_ylabel(label)
-        #     ax.set_xlabel("Years from start")
-        # else:
-        #     ax.set_ylabel("")
-        #     ax.set_xlabel("")
-
         ax.set_ylabel(y_label)
 
         ax.set_yscale("log")
@@ -215,38 +200,24 @@ def plot_sensitivity(analysis: Analysis):
     if analysis.sensitivity_analysis_result is None:
         return None
 
-    # Make plot
+    # Get dataframes
     df = analysis.sensitivity_analysis_result.get_dataframe(analysis.scenario)
-    err_df = df.melt(id_vars=["Parameter", "Output"], value_vars=["Total Error", "First Error"], var_name=("Error"))
-    df = df.melt(id_vars=["Parameter", "Output"], value_vars=["Total-effect", "First-order"], var_name=("Sobol index"))
+    err_df = df.melt(id_vars=["Parameter", "Output"], value_vars=["Total Error", "First Error"], var_name="Error")
+    df = df.melt(id_vars=["Parameter", "Output"], value_vars=["Total-effect", "First-order"], var_name="Sobol index", value_name="Value")
 
-    grid = sns.catplot(data=df, x="Parameter", y="value", col="Output", col_wrap=2,
-                       hue="Sobol index", kind="bar", aspect=1.8, legend_out=False)
+    # Plot
+    grid = sns.catplot(data=df, x="Parameter", y="Value", col="Output", col_wrap=2, hue="Sobol index", kind="bar", aspect=1.8, legend_out=False)
 
-    # Add labels and errors bars
+    # Add error lines and values
     for ax, var in zip(grid.axes.ravel(), ["P", "D", "I", "N"]):
-        widths = []
-        heights = []
-        errors = []
+        # Error bars
+        ax.errorbar(x=df[df["Output"] == var]["Parameter"], y=df[df["Output"] == var]["Value"],
+                    yerr=err_df[err_df["Output"] == var]["value"], ecolor='black', linewidth=0, capsize=2)
+
+        # Value labels   
         for c in ax.containers:
-
-            labels = []
-            j = 0
-            for i, v in enumerate(c):
-                widths.append(v.get_width())
-                heights.append(v.get_height())
-
-                if i % 2 == 0:
-                    errors.append(err_df[err_df["Output"] == var][err_df["Error"] == "Total Error"]["value"].values[j])
-                else:
-                    errors.append(err_df[err_df["Output"] == var][err_df["Error"] == "First Error"]["value"].values[j])
-                    j += 1
-
-                labels.append(f'{v.get_height():.2f}' if v.get_height() >= 0.01 else "<0.01")
-
-            ax.bar_label(c, labels=labels, label_type='edge')
-
-        ax.errorbar(widths, heights, yerr=errors)
+            if type(c) == matplotlib.container.BarContainer:
+                ax.bar_label(c, labels=[f'{v.get_height():.2f}' if v.get_height() >= 0.01 else "<0.01" for v in c], label_type='edge')
 
     grid.tight_layout()
 
