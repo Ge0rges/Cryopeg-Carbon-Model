@@ -212,9 +212,9 @@ def plot_sensitivity(analysis: Analysis):
     for ax, var in zip(grid.axes.ravel(), ["P", "D", "I", "N"]):
         # Error bars
         ax.errorbar(x=df[df["Output"] == var]["Parameter"], y=df[df["Output"] == var]["Value"],
-                    yerr=err_df[err_df["Output"] == var]["value"], ecolor='black', linewidth=0, capsize=2)
+                    yerr=err_df[err_df["Output"] == var]["value"], ecolor='black', linewidth=0, elinewidth=2, capsize=2)
 
-        # Value labels   
+        # Value labels
         for c in ax.containers:
             if type(c) == matplotlib.container.BarContainer:
                 ax.bar_label(c, labels=[f'{v.get_height():.2f}' if v.get_height() >= 0.01 else "<0.01" for v in c], label_type='edge')
