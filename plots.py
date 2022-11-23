@@ -209,7 +209,7 @@ def plot_sensitivity(analysis: Analysis):
     grid = sns.catplot(data=df, x="Parameter", y="Value", col="Output", col_wrap=2, hue="Sobol index", kind="bar", aspect=1.8, legend_out=False)
 
     # Add error lines and values
-    for ax, var in zip(grid.axes.ravel(), ["P", "D", "I", "N"]):
+    for ax, var in zip(grid.axes.ravel(), analysis.sensitivity_analysis_result.variables):
         # Error bars
         ax.errorbar(x=df[df["Output"] == var]["Parameter"], y=df[df["Output"] == var]["Value"],
                     yerr=err_df[err_df["Output"] == var]["value"], ecolor='black', linewidth=0, elinewidth=2, capsize=2)
