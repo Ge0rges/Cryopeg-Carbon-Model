@@ -56,7 +56,6 @@ class SensitivityResult:
 
             for i, output in enumerate(self.variables):
                 if output == "Mean":
-                    print(ST[:, row])
                     df.append([p_names[row], output, np.mean(ST[:, row]), np.mean(S1[:, row]), np.mean(st_err[:, row]), np.mean(s1_err[:, row])])
 
                 else:
