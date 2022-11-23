@@ -37,12 +37,13 @@ class SensitivityResult:
     total_conf_int: [[float]] = None
     first_order_conf_int: [[float]] = None
     variables: [str] = ["P", "D", "I", "N", "Mean"]
-    assert len(variables) == len(total_sobol_indices) + 1
 
     def get_dataframe(self, scenario):
         """
         Returns model results as a dataframe. Removes values that are exactly 0 (SA wasn't run).
         """
+        assert len(self.variables) == len(self.total_sobol_indices) + 1
+
         p_names = scenario._paramater_names
         ST = self.total_sobol_indices
         S1 = self.first_order_sobol_indices
