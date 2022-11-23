@@ -59,8 +59,10 @@ class SensitivityResult:
                     df.append([p_names[row], output, np.mean(ST[:, row]), np.mean(S1[:, row]), np.mean(st_err[:, row]), np.mean(s1_err[:, row])])
 
                 else:
+                    df.append([p_names[row], output, ST[i, row], S1[i, row], st_err[i, row], s1_err[i, row]])
 
         df = pandas.DataFrame(data=df, columns=["Parameter", "Output", "Total-effect", "First-order",
+                                                "Total Error", "First Error"])
         return df.astype({"Parameter": str, "Output": str, "Total-effect": float, "First-order": float,
                           "Total Error": float, "First Error": float})
 
