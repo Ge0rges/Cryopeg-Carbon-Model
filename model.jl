@@ -29,7 +29,7 @@ function run_sensitivity_analysis(p_bounds, u0_length)
     end
 
     # Run GSA
-    sobol_result = GlobalSensitivity.gsa(f1, Sobol(order=[0, 1], nboot=5, conf_level=0.95), p_bounds, samples=2^18)
+    sobol_result = GlobalSensitivity.gsa(f1, Sobol(order=[0, 1], nboot=5, conf_level=0.95), p_bounds, samples=2^20)
 
     return (sobol_result.ST, sobol_result.S1, sobol_result.ST_Conf_Int, sobol_result.S1_Conf_Int)
 end
