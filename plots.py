@@ -210,14 +210,20 @@ def plot_sensitivity(analysis: Analysis):
 
     # Add error lines and values
     for ax, var in zip(grid.axes.ravel(), analysis.sensitivity_analysis_result.variables):
-        # Error bars
-        ax.errorbar(x=df[df["Output"] == var]["Parameter"], y=df[df["Output"] == var]["Value"],
-                    yerr=err_df[err_df["Output"] == var]["value"], ecolor='black', linewidth=0, elinewidth=2, capsize=2)
+        number_of_bars = 0
 
         # Value labels
         for c in ax.containers:
             if type(c) == matplotlib.container.BarContainer:
                 ax.bar_label(c, labels=[f'{v.get_height():.2f}' if v.get_height() >= 0.01 else "<0.01" for v in c], label_type='edge')
+                number_of_bars += 1
+
+        # Error bars
+        ticklocs = ax.xaxis.get_majorticklocs()
+        offset = 0.5 * ax.containers[0][0].width / number_of_bars
+        ax.errorbar(x=np.append(ticklocs - offset, ticklocs + offset), y=df[df["Output"] == var]["Value"],
+                    yerr=err_df[err_df["Output"] == var]["value"], ecolor='black', linewidth=0, elinewidth=2, capsize=2)
+
 
     grid.tight_layout()
 
