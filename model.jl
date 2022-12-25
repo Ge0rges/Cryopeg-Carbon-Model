@@ -40,7 +40,7 @@ function run_sensitivity_analysis(p_bounds, u0_length)
     # Define a function that remakes the problem and gets its result. Called for each sample.
     f1 = function (p)
         # u0 is the last n indices
-        prob = ODEProblem(model, p[end-u0_length+1:end-1, i], (0.0, p[end, i]), p[1:end-u0_length, i])
+        prob = ODEProblem(model, p[end-u0_length+1:end-1], (0.0, p[end]), p[1:end-u0_length])
         sol = solve(prob, Rosenbrock23(); callback=cbs, maxiters=1e6, saveat=ub[end])
         sol[:, end]
     end
