@@ -62,7 +62,7 @@ class Analysis:
         self._use_me_lower_bound = use_me_lower_bound
         self._use_eea_average = use_eea_average
 
-        # Invalidate any rates present, we need to calcualte it
+        # Invalidate any rates present, we need to calculate it
         if self._use_minimum_growth_rate:
             self.scenario._growth_rate = None
 

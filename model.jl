@@ -8,7 +8,14 @@ using Printf
 
 # Runs the model using solve_model and packages results nicely.
 function run_model(p, u0)
-    sol = solve_model(p, u0)
+    cbs = make_callbacks(sensitivity_analysis=false, p=p)
+
+    # Convert p and u0, and remove puncutal_punctual_organic_carbon_addition from p
+    p = convert(Array{Float64}, p[1:end-1])
+    u0 = convert(Array{Float64}, u0)
+
+    prob = ODEProblem(model, u0[1:end-1], (0.0, last(u0)), p)
+    sol = solve(prob, Rosenbrock23(), callback=cbs, maxiters=1e6)
 
     # Return the solution array - [pOC, dOC, IC, Cells, t]
     return [[x[1] for x in sol.u], [x[2] for x in sol.u], [x[3] for x in sol.u], [x[4] for x in sol.u], sol.t]
@@ -21,22 +28,32 @@ function run_sensitivity_analysis(p_bounds, u0_length)
     p_bounds = [p_bounds[i, :] for i in 1:size(p_bounds, 1)] # Fix array shape
     p_bounds = convert(Array{Array{Float64}}, p_bounds[1:end])
 
+    lb = [p_bounds[i][1] for i in 1:size(p_bounds, 1)]
+    ub = [p_bounds[i][2] for i in 1:size(p_bounds, 1)]
+
+    # Timespan must stay constant
+    @assert ub[end] == lb[end] "Timespan must not be subjected to SA"
+
+    # Get cbs
+    cbs = make_callbacks(sensitivity_analysis=true)
+
     # Define a function that remakes the problem and gets its result. Called for each sample.
     f1 = function (p)
         # u0 is the last n indices
-        sol = solve_model(p[1:end-u0_length], p[end-u0_length+1: end]; sensitivity_analysis=true)
+        prob = ODEProblem(model, p[end-u0_length+1:end-1, i], (0.0, p[end, i]), p[1:end-u0_length, i])
+        sol = solve(prob, Rosenbrock23(); callback=cbs, maxiters=1e6, saveat=ub[end])
         sol[:, end]
     end
 
     # Run GSA
-    sobol_result = GlobalSensitivity.gsa(f1, Sobol(order=[0, 1], nboot=5, conf_level=0.95), p_bounds, samples=2^20)
+    sobol_result = GlobalSensitivity.gsa(f1, Sobol(order=[0, 1], nboot=5, conf_level=0.95), p_bounds, samples=2^21)
 
     return (sobol_result.ST, sobol_result.S1, sobol_result.ST_Conf_Int, sobol_result.S1_Conf_Int)
 end
 
 
 # Defines a problem object and solves it.
-function solve_model(p, u0; sensitivity_analysis=false)
+function make_callbacks(;sensitivity_analysis=false, p=nothing)
     # Build a callback to introduce a carbon addition as it is a discontinuity
     carbon_add_cb = nothing
     if !sensitivity_analysis
@@ -47,10 +64,6 @@ function solve_model(p, u0; sensitivity_analysis=false)
             push!(stops, time_to_add)
             push!(carbon, (convert(Float64, pOC_to_add), convert(Float64, dOC_to_add)))
         end
-
-        # Convert p and u0, and remove puncutal_punctual_organic_carbon_addition from p
-        p = convert(Array{Float64}, p[1:end-1])
-        u0 = convert(Array{Float64}, u0)
 
         # Callback for punctual addition - causes a discontinuity
         additions = Dict(Pair.(stops, carbon))
@@ -91,19 +104,7 @@ function solve_model(p, u0; sensitivity_analysis=false)
     zero_cb = DiscreteCallback(zero_condition, zero_out!)
 
     # Callback list
-    cbs = CallbackSet(carbon_add_cb, max_cb, eea_min_cb, ic_min_cb, zero_cb, PositiveDomain())
-
-    # Out of domain function
-    # is_invalid_domain(u, p, t) = any(x -> x < 0, u)
-
-    # Build the ODE Problem and Solve
-    prob = ODEProblem(model, u0[1:end-1], (0.0, last(u0)), p)
-
-    save_last = sensitivity_analysis ? last(u0) : []
-    sol = solve(prob, Rosenbrock23(), callback=cbs, maxiters=1e6, saveat=save_last) #isoutofdomain=is_invalid_domain
-
-
-    return sol
+    return CallbackSet(carbon_add_cb, max_cb, eea_min_cb, ic_min_cb, zero_cb, PositiveDomain())
 end
 
 

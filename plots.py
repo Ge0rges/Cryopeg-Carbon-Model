@@ -208,6 +208,8 @@ def plot_sensitivity(analysis: Analysis):
     # Plot
     grid = sns.catplot(data=df, x="Parameter", y="Value", col="Output", col_wrap=2, hue="Sobol index", kind="bar", aspect=1.8, legend_out=False)
 
+    grid.set_titles(col_template="Sensitivity with respect to {col_name}")
+
     # Add error lines and values
     for ax, var in zip(grid.axes.ravel(), analysis.sensitivity_analysis_result.variables):
         # Value labels
@@ -221,6 +223,9 @@ def plot_sensitivity(analysis: Analysis):
         ax.errorbar(x=np.append(ticklocs - offset, ticklocs + offset), y=df[df["Output"] == var]["Value"],
                     yerr=err_df[err_df["Output"] == var]["value"], ecolor='black', linewidth=0, elinewidth=2, capsize=2)
 
+        # Change title for mean
+        if var == "Mean":
+            ax.set_title("Average sensitivity across outputs")
 
     grid.tight_layout()
 

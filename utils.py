@@ -36,7 +36,7 @@ class SensitivityResult:
     first_order_sobol_indices: [float] = None
     total_conf_int: [[float]] = None
     first_order_conf_int: [[float]] = None
-    variables: [str] = ["P", "D", "I", "N", "Mean"]
+    variables: [str] = ["POC", "DOC", "IC", "Cells", "Mean"]
 
     def get_dataframe(self, scenario):
         """
