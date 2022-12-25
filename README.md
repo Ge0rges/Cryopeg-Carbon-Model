@@ -20,7 +20,7 @@ The best documentation is the paper cited above.
 ## Architecture & Codebase Design
 The model is coded in Julia and is contained in `model.jl`. This file contains the code that defines and solves the differential equations of the model, and performs the sensitivyt analysis.
 
-The python code interfaces with the model to perform different analyses. It first defines Scenario objects that contain paramaters to run all analyses. The Scenario class also defines common paramters that are not meant to be changed (designated by the standard leading _).
+The python code interfaces with the model to perform different analyses. It first defines Scenario objects that contain parameters to run all analyses. The Scenario class also defines common paramters that are not meant to be changed (designated by the standard leading _).
 
 An analysis object is then created, it is assigned a scenario, and executes all analyses. Individual analyses can be performed by calling their respective functions.
 

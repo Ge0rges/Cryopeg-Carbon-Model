@@ -1,12 +1,12 @@
 """
 This file contains master functions for the different cryopeg brine scenarios.
 Run the method that corresponds to the scenario you'd like to simulate.
-All relevant paramaters will be calculated for that scenario including:
+All relevant parameters will be calculated for that scenario including:
     - Maintenance energy high and low bounds
     - Model output given the calculated maintenance energy
     - Brine expansion factor
-The main function of this file executes all scenarios and the sensitivity analytsis.
-Call run_all_analysis() with custom paramaters to create your own scenario.
+The main function of this file executes all scenarios and the sensitivity analysis.
+Call run_all_analysis() with custom parameters to create your own scenario.
 """
 
 import csv

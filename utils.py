@@ -44,7 +44,7 @@ class SensitivityResult:
         """
         assert len(self.variables) == len(self.total_sobol_indices) + 1
 
-        p_names = scenario._paramater_names
+        p_names = scenario._parameter_names
         ST = self.total_sobol_indices
         S1 = self.first_order_sobol_indices
         st_err = self.total_conf_int

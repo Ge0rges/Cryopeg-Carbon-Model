@@ -91,10 +91,10 @@ class Analysis:
         # Switch out growth rate to calcualted one if required
         self.scenario._growth_rate = self.maintenance_energy_result.minimum_growth_rate if self._use_minimum_growth_rate else self.scenario.lab_growth_rate
 
-        # Switch out maintenance energy based on paramater
+        # Switch out maintenance energy based on parameter
         self.scenario.maintenance_per_cell = self.maintenance_energy_result.lower_bound_me if self._use_me_lower_bound else self.maintenance_energy_result.upper_bound_me
 
-        # Switch out EEA rate based on paramater
+        # Switch out EEA rate based on parameter
         average_eea = (self.eea_estimation.eea_lower + self.eea_estimation.eea_upper)/2
         self.scenario._eea_rate = average_eea if self._use_eea_average else self.scenario._eea_rate
 
@@ -227,7 +227,7 @@ def run_model(scenario: Scenario):
     Returns model output as tuple of lists: pOC, dOC, inorganic carbon, cell count, time
     """
     # Run the model through PyJulia
-    P, D, I, N, t = Main.run_model(scenario.get_julia_ordered_paramaters(), scenario.get_julia_ordered_ivp())
+    P, D, I, N, t = Main.run_model(scenario.get_julia_ordered_parameters(), scenario.get_julia_ordered_ivp())
 
     result = ModelResult()
     result.pOC = P
@@ -246,10 +246,10 @@ def run_sensitivity_analysis(scenario: Scenario):
     Returns total and first order sobol indices in a tuple ordered as such.
     """
 
-    # In Sensitivity analysis, paramaters include the initial conditions.
-    p_bounds = scenario._paramater_bounds
-    p = scenario.get_julia_ordered_paramaters() + scenario.get_julia_ordered_ivp()
-    assert p[len(scenario.get_julia_ordered_paramaters()) - 1] == -1  # SA is not compatible with OC inputs
+    # In Sensitivity analysis, parameters include the initial conditions.
+    p_bounds = scenario._parameter_bounds
+    p = scenario.get_julia_ordered_parameters() + scenario.get_julia_ordered_ivp()
+    assert p[len(scenario.get_julia_ordered_parameters()) - 1] == -1  # SA is not compatible with OC inputs
 
     # Sensitivity analysis
     # Fix the bounds to replace "None" with no range bounds that will yield a 0 sobol index.
@@ -276,7 +276,7 @@ def calculate_brine_expansion(carbon_density_in_permafrost, carbon_required_per_
     This assumes that each year the permafrost the brine was "thawed into" previously is replenished in carbon.
     This assumes a proportional expansion in all directions of the brine.
     """
-    ## BRINE VOLUME PARAMATERS
+    ## BRINE VOLUME parameterS
     # Prolate spheroid dimensions
     a = Decimal('2.185099')  # cm - width
     b = Decimal('4')  # cm - length

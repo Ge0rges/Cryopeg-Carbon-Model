@@ -24,7 +24,7 @@ end
 
 # Runs the sensitivity analysis using Sobol method.
 function run_sensitivity_analysis(p_bounds, u0_length)
-    # In Sensitivity analysis, paramaters include the initial conditions.
+    # In Sensitivity analysis, parameters include the initial conditions.
     p_bounds = [p_bounds[i, :] for i in 1:size(p_bounds, 1)] # Fix array shape
     p_bounds = convert(Array{Array{Float64}}, p_bounds[1:end])
 
@@ -110,7 +110,7 @@ end
 
 # Implements the differential equations that define the model
 function model(du, u, p, t)
-    # Paramaters
+    # Parameters
     mu_max = p[1]
     maintenance_per_cell = p[2]
     dOC_per_cell = p[3]

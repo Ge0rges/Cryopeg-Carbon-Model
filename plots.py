@@ -17,7 +17,7 @@ sns.set_theme()
 
 def plot_one_analysis(analysis: Analysis):
     """
-    Plots the result of a model iteration: inorganic and organic carbon overlayed, and cell density seperately
+    Plots the result of a model iteration: inorganic and organic carbon overlayed, and cell density separately
     in one figure. Returns a figure.
     """
     # Make seaborn data frame
@@ -45,7 +45,7 @@ def plot_one_analysis(analysis: Analysis):
 def plot_all_scenarios_all_analyses(analyses: [Analysis], color_cycle: int = None):
     """
     Plots the results of many model outputs in one figure. In one figure, creates four columns, one for each data type.
-    Each row is a analysis. Returns a figure.
+    Each row is an analysis. Returns a figure.
     """
 
     # Get the right color and dashes for plot decomposition

@@ -13,7 +13,7 @@ class Scenario:
 
     scenario_name = None  # string - Used to title plots resulting from this scenario.
 
-    # Variable paramaters
+    # Variable parameters
     start_poc = None  # fg C - The measured particulate organic carbon around the brine today.
     end_poc = None  # fg C - The measured particulate organic carbon in the brine today.
     start_doc = None  # fg C - The measured dissolved organic carbon around the brine today.
@@ -30,14 +30,14 @@ class Scenario:
     title = None  # String - Scenario name. Used in plots later.
 
     # Constants - Common to all Scenarios
-    _start_cell = 10 ** 5  # Average cells/mL order of magnitue for sea-ice (Cooper et al. 2019)
+    _start_cell = 10 ** 5  # Average cells/mL order of magnitude for sea-ice (Cooper et al. 2019)
     _carrying_capacity = 10 ** 9  # cells/mL - Maximum cell density.
     _growth_rate = None  # 1/day - Growth rate used by the model.
 
     _particulate_organic_carbon_input_rate = 0  # fg C/(mL x day) - Particulate organic carbon input per day.
     _dissolved_organic_carbon_input_rate = 0  # fg C/(mL x day) - Dissolved carbon input per day.
 
-    _start_inorganic_carbon_content = 0  # fg C/mL - Inroagnic carbon in brine at start.
+    _start_inorganic_carbon_content = 0  # fg C/mL - Inorganic carbon in brine at start.
     _inorganic_carbon_input_rate = 0  # fg C/(mL x day) - Organic carbon input per day.
     _inorganic_carbon_fixation_rate = 0  # fg C/(mL x day) - Total inorganic carbon converted to organic carbon per day.
     _inorganic_carbon_per_cell = 0  # fg C/cell -  Amount of inorganic carbon per cell.
@@ -49,21 +49,21 @@ class Scenario:
     # _Kd: fg C - The organic carbon concentration at which u = 1/2 u0.
     _Kd = 8.82 * 10 ** 5  # average Ks ug AA/L = 2.152 (Yager & Deming 1999) * DCAA are 41% carbon (Rowe & Deming 1985)
 
-    _paramater_bounds = [[1e-6, 1e2], [1e-5, 500], [1, 500], [1e5, 1e9], None,  # Ordered bounds for sensitivty analysis
+    _parameter_bounds = [[1e-6, 1e2], [1e-5, 500], [1, 500], [1e5, 1e9], None,  # Ordered bounds for sensitivity analysis
                          None, None, None, None, [0, 100], [1e3, 1e8], None, None, None, None, [1, 1e9], None]
 
-    # _paramater_bounds = [None, None, None, [1e5, 1e9], None,  # Ordered bounds for sensitivty analysis
+    # _parameter_bounds = [None, None, None, [1e5, 1e9], None,  # Ordered bounds for sensitivity analysis
     #                      None, None, None, None, None, None, None, None, None, None, [1, 1e9], None]
 
-    _paramater_names = ["$μ_{max}$", "$m$", "$\\alpha_D$", "$N_{max}$", "$P_{in}$",
+    _parameter_names = ["$μ_{max}$", "$m$", "$\\alpha_D$", "$N_{max}$", "$P_{in}$",
                         "$D_{in}$", "$I_{in}$", "$I_{xr}$", "$\\alpha_I$",
                         "$\\gamma_{cell}$", "$K_d$", "Punctual organic carbon addition",
                         "$P_0$", "$D_0$", "$I_0$", "$N_0$", "Timespan"]  # IVP
 
     # Methods
-    def get_julia_ordered_paramaters(self):
+    def get_julia_ordered_parameters(self):
         """
-        The julia model takes in the paramaters as an ordered list. This method builds and returns that list.
+        The julia model takes in the parameters as an ordered list. This method builds and returns that list.
         :return: Ordered parameter list
         :rtype: List
         """
@@ -77,7 +77,7 @@ class Scenario:
         # punctual_organic_carbon_addition always at end in julia code. Changes to this array must be manually carried
         # to model.jl run_model()
 
-        assert len(self._paramater_bounds) == len(self._paramater_names) == len(ordered_p) + len(self.get_julia_ordered_ivp())
+        assert len(self._parameter_bounds) == len(self._parameter_names) == len(ordered_p) + len(self.get_julia_ordered_ivp())
 
         return ordered_p
 
@@ -119,7 +119,7 @@ def cb1_scenario():
     cb1_18_poc = convert_micromolar_carbon_to_fgC_per_ml(cb1_18_poc)
     cb1_18_doc = convert_micromolar_carbon_to_fgC_per_ml(cb1_18_doc)
 
-    # PARAMATERS
+    # PARAMETERS
     scenario = Scenario()
     scenario.title = "CB1"
 
@@ -129,7 +129,7 @@ def cb1_scenario():
     scenario.end_doc = cb1_18_doc
     scenario.observed_end_cell_density = 5.7 * 10 ** 6  # Average cell/mL order of magnitude (Cooper et al. 2019)
     scenario.lab_growth_rate = 0.06  # Marinobacter aerobic growth rate in-situ based on lab experiments (unpublished), 50% anaerobic penalty
-    scenario.dissolved_organic_carbon_per_cell = 15.7  # Litterature based value (Nguyen & Maranger 2011)
+    scenario.dissolved_organic_carbon_per_cell = 15.7  # Literature based value (Nguyen & Maranger 2011)
 
     return scenario
 
@@ -137,9 +137,9 @@ def cb1_scenario():
 def cb4_scenario():
     """
     CB4 is an intra-sediment brine for which carbon values of brine and its immediate surrounding are available. This
-    is therefore a specific case of the more general "intra-sediment" brine scenario. Its biology is also somewhat
-    unique from the other cryopeg brines, e.g. Psychrobacter is the dominant genus in this brine rather than
-    Marinobacter like many others.
+    is therefore a specific case of the more general "intra-sediment" brine scenario. Its biology is also different
+    from the other cryopeg brines, e.g. Psychrobacter is the dominant genus in this brine rather than Marinobacter
+    like many others.
     """
     dry_sediment_density = 2.625 * 10 ** 6  # ug/mL average density density of kaolinite and sand
     expansion_factor = 0.0905  # Assumed expansion factor of porewater from liquid to solid. (French & Shur 2010)
@@ -162,7 +162,7 @@ def cb4_scenario():
     cb4_brine_poc = convert_micromolar_carbon_to_fgC_per_ml(cb4_brine_poc)
     cb4_brine_doc = convert_micromolar_carbon_to_fgC_per_ml(cb4_brine_doc)
 
-    # PARAMATERS
+    # PARAMETERS
     scenario = Scenario()
     scenario.title = "CB4"
 
@@ -228,6 +228,6 @@ def cbiw_scenario():
 
     scenario.observed_end_cell_density = 1.39 * 10 ** 8  # average cell/mL of CBIW (Cooper et al. 2019)
     scenario.lab_growth_rate = 0.06  # Marinobacter aerobic growth rate in-situ based on lab experiments (unpublished), 50% anaerobic penalty
-    scenario.dissolved_organic_carbon_per_cell = 15.7  # Litterature based value (Nguyen & Maranger 2011)
+    scenario.dissolved_organic_carbon_per_cell = 15.7  # Literature based value (Nguyen & Maranger 2011)
 
     return scenario
