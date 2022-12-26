@@ -206,9 +206,9 @@ def plot_sensitivity(analysis: Analysis):
     df = df.melt(id_vars=["Parameter", "Output"], value_vars=["Total-effect", "First-order"], var_name="Sobol index", value_name="Value")
 
     # Plot
-    grid = sns.catplot(data=df, x="Parameter", y="Value", col="Output", col_wrap=2, hue="Sobol index", kind="bar", aspect=1.8, legend_out=False)
+    grid = sns.catplot(data=df, x="Parameter", y="Value", row="Sobol index", hue="Output", kind="bar", aspect=1.8, legend_out=False)
 
-    grid.set_titles(col_template="Sensitivity with respect to {col_name}")
+    # grid.set_titles(col_template="Sensitivity with respect to {col_name}")
 
     # Add error lines and values
     for ax, var in zip(grid.axes.ravel(), analysis.sensitivity_analysis_result.variables):

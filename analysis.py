@@ -3,8 +3,8 @@ Contains functions that encapsulate or execute various analyses or calculations.
 Functions take a scenario object, an
 """
 
-import numpy as np
 import copy
+import pickle
 
 from utils import *
 from scenario import Scenario
@@ -77,10 +77,11 @@ class Analysis:
         return
 
 
-    def run_analysis(self, do_sensitivity_analysis: bool):
+    def run_analysis(self, do_sensitivity_analysis: bool, cached_SA: bool = False):
         """
-        Runs all analyses including sensitivity analysis if requested. Configures the scenario's growth rate and
-        maintenance energy as required by the analysis. Stores all results in the class.
+        Runs all analyses including sensitivity analysis if requested. If cached_SA is True, then SA plot will be drawn
+        from previously saved results. Configures the scenario's growth rate and maintenance energy as required by the
+        analysis. Stores all results in the class.
         """
         # Calculate bounds for maintenance energy
         self.maintenance_energy_result = estimate_me_bounds(self.scenario)
@@ -109,8 +110,17 @@ class Analysis:
         self.expansion_result = calculate_brine_expansion(self.scenario.start_poc+self.scenario.start_doc,
                                                           (self.model_result.dOC[-1] - self.model_result.dOC[0]) / self.scenario._timespan)
 
-        # Run the sensitivity analysis
-        self.sensitivity_analysis_result = run_sensitivity_analysis(self.scenario) if do_sensitivity_analysis else None
+        # Run the sensitivity analysis or load it from cache
+        if cached_SA:
+            with open("Results/SA_result_object", "rb") as SA_results:
+                self.sensitivity_analysis_result = pickle.load(SA_results)
+
+            if do_sensitivity_analysis:
+                print("do_SA and cached_SA were both True. Loading results from cache only.")
+
+        elif do_sensitivity_analysis:
+            self.sensitivity_analysis_result = run_sensitivity_analysis(
+                self.scenario) if do_sensitivity_analysis else None
 
 
 def estimate_me_bounds(scenario: Scenario):

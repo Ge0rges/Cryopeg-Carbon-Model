@@ -11,12 +11,12 @@ Call run_all_analysis() with custom parameters to create your own scenario.
 
 import csv
 import os
-
+import pickle
 from scenario import *
 from plots import *
 
 
-def log_results(analyses):
+def log_results(analyses, cached_SA):
     """
     Displays or saves the plots for each analysis done. Prints or save endpoints of model and maintenance energy
     calculations. Saves plots and values to disk if savelog is true.
@@ -84,8 +84,13 @@ def log_results(analyses):
         if sa_fig:
             sa_fig.savefig("Results/" + analysis.title + "_sa.pdf", format="pdf", dpi=500)
 
+            # Save SA values if not from cache
+            if not cached_SA:
+                with open("Results/SA_result_object", "wb") as sa_results_file:
+                    pickle.dump(analysis.sensitivity_analysis_result, sa_results_file)
+
     # Write the values to CSV if required
-    with open('Results/values.csv', 'w+') as f:
+    with open("Results/values.csv", "w+") as f:
         write = csv.writer(f)
         write.writerow(csv_header)
         write.writerows(csv_rows)
@@ -118,7 +123,8 @@ if __name__ == "__main__":  # Generates all figures and data points.
     all_analyses = []
 
     # On every scenario, try every analysis configuration. Run a sensitivity analysis only on the first one.
-    do_SA = True
+    do_SA = True  # If true, run SA. If do_SA_from_file is also true, results will be taken from cached file.
+    cached_SA = False  # If true, loads SA results from file and then plots it.
     for use_minimum_growth_rate in [True, False]:
         for use_me_lower_bound in [True, False]:
             for use_eea_average in [True, False]:
@@ -126,13 +132,13 @@ if __name__ == "__main__":  # Generates all figures and data points.
                     a = Analysis(scenario, use_minimum_growth_rate, use_me_lower_bound, use_eea_average)
 
                     # Run SA on first config pair - first scenario, only.
-                    a.run_analysis(do_sensitivity_analysis=do_SA)
+                    a.run_analysis(do_sensitivity_analysis=do_SA, cached_SA=cached_SA)
                     do_SA = False
 
                     all_analyses.append(a)
 
     # Save plots and values of all results.
-    log_results(all_analyses)
+    log_results(all_analyses, cached_SA)
 
     # Generate the hypothetical growth scenarios figure.
     hg_fig = hypothetical_growth_scenarios()
