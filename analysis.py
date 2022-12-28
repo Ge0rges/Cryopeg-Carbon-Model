@@ -128,9 +128,9 @@ def estimate_me_bounds(scenario: Scenario):
     Calculates the maintenance energy bounds and minimum growth rate of the system.
     This is done by assuming that organic carbon consumed is equal to the difference between total organic carbon
     in the brine, and (total organic brine surrounding the brine + any carbon additions).
-    Upper bound corresponds to a strict expoential growth case from assumed start cell density to observed end cell
+    Upper bound corresponds to a strict exponential growth case from assumed start cell density to observed end cell
     density.
-    Lower bound corrsponds to a case where no growth occured, meaning start cell density is equal to end cell density.
+    Lower bound corresponds to a case where no growth occurred, meaning start cell density is equal to end cell density.
     Returns a tuple: (minimum growth rate, minimum doubling time, ME upper bound, ME lower bound).
     ME values are in fg C/cell day.
     """

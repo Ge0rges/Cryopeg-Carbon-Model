@@ -134,6 +134,7 @@ if __name__ == "__main__":  # Generates all figures and data points.
                     # Run SA on first config pair - first scenario, only.
                     a.run_analysis(do_sensitivity_analysis=do_SA, cached_SA=cached_SA)
                     do_SA = False
+                    cached_SA = False
 
                     all_analyses.append(a)
 

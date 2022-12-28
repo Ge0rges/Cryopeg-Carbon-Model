@@ -49,11 +49,8 @@ class Scenario:
     # _Kd: fg C - The organic carbon concentration at which u = 1/2 u0.
     _Kd = 8.82 * 10 ** 5  # average Ks ug AA/L = 2.152 (Yager & Deming 1999) * DCAA are 41% carbon (Rowe & Deming 1985)
 
-    _parameter_bounds = [[1e-6, 1e2], [1e-5, 500], [1, 500], [1e5, 1e9], None,  # Ordered bounds for sensitivity analysis
-                         None, None, None, None, [0, 100], [1e3, 1e8], None, None, None, None, [1, 1e9], None]
-
-    # _parameter_bounds = [None, None, None, [1e5, 1e9], None,  # Ordered bounds for sensitivity analysis
-    #                      None, None, None, None, None, None, None, None, None, None, [1, 1e9], None]
+    _parameter_bounds = [[1e-6, 1e2], [1e-5, 500], [1, 500], [1e8, 1e9], None,  # Ordered bounds for sensitivity analysis
+                         None, None, None, None, [0, 100], [1e3, 1e8], None, None, None, None, [1, 1e8], None]
 
     _parameter_names = ["$μ_{max}$", "$m$", "$\\alpha_D$", "$N_{max}$", "$P_{in}$",
                         "$D_{in}$", "$I_{in}$", "$I_{xr}$", "$\\alpha_I$",
