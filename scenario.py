@@ -14,14 +14,14 @@ class Scenario:
     scenario_name = None  # string - Used to title plots resulting from this scenario.
 
     # Variable parameters
-    start_poc = None  # fg C - The measured particulate organic carbon around the brine today.
-    end_poc = None  # fg C - The measured particulate organic carbon in the brine today.
-    start_doc = None  # fg C - The measured dissolved organic carbon around the brine today.
-    end_doc = None  # fg C - The measured dissolved organic carbon in the brine today.
+    start_poc = None  # fg C/mL - The measured particulate organic carbon around the brine today.
+    end_poc = None  # fg C/mL - The measured particulate organic carbon in the brine today.
+    start_doc = None  # fg C/mL - The measured dissolved organic carbon around the brine today.
+    end_doc = None  # fg C/mL - The measured dissolved organic carbon in the brine today.
 
     punctual_organic_carbon_addition = []  # (time in days, (fg pOC/ml, fg dOC/ml)) - Added carbon at a given time.
 
-    observed_end_cell_density = None  # cells - The measured cell density in the corresponding brine today.
+    observed_end_cell_density = None  # cells/mL - The measured cell density in the corresponding brine today.
 
     lab_growth_rate = None  # 1/day - Growth rate determined under nutrient replete in-situ conditions in the lab.
     maintenance_per_cell = None  # fg C/day cell - Constant maintenance energy coefficient.
@@ -44,10 +44,10 @@ class Scenario:
 
     _timespan = 40000*365.25  # Age in days based on carbon dating (Iwanaha et al. 2021)
 
-    _eea_rate = 0.012192  # fg pOC/cell * day - The hydrolysis rate of pOC by extracellular enzymes (Showalter, 2021)
+    _eea_rate = 0.012192  # fg C/(cell x day) - The hydrolysis rate of pOC by extracellular enzymes (Showalter, 2021)
 
     # _Kd: fg C - The organic carbon concentration at which u = 1/2 u0.
-    _Kd = 8.82 * 10 ** 5  # average Ks ug AA/L = 2.152 (Yager & Deming 1999) * DCAA are 41% carbon (Rowe & Deming 1985)
+    _Kd = 8.82 * 10 ** 5  # fg/mL - average Ks from ug C/L = 2.152 (Yager & Deming 1999) * DCAA are 41% carbon (Rowe & Deming 1985)
 
     _parameter_bounds = [[1e-6, 1e2], [1e-5, 500], [1, 500], [1e8, 1e9], None,  # Ordered bounds for sensitivity analysis
                          None, None, None, None, [0, 100], [1e3, 1e8], None, None, None, None, [1, 1e8], None]
@@ -95,8 +95,8 @@ def cb1_scenario():
     However, it shares many characteristics with the other intra-sediment brines studied. Therefore, using its data,
     paired with regional organic carbon values, we construct a common intra-sediment brine scenario.
     """
-    dry_sediment_density = 2.625 * 10 ** 6  # ug/mL average density density of kaolinite and sand
-    expansion_factor = 0.0905  # Assumed expansion factor of porewater from liquid to solid. (French & Shur 2010)
+    dry_sediment_density = 2.625 * 10 ** 6  # ug/mL average density density of kaolinite and sand (Iwahana et al., 2021)
+    expansion_factor = 0.0905  # % - Assumed expansion factor of porewater from liquid to solid. (French & Shur 2010)
     beo_volumetric_ice_content = 0.731  # L solid porewater/L permafrost from Go Iwahana (unpublished, but see Meyer et al. 2010)
     beo_poc = 0.0232  # ug C/ug dry sed (our data)
     beo_doc = 51.2323  # mg C/L thawed porewater (our data)
@@ -106,11 +106,11 @@ def cb1_scenario():
     # Conversions
     # Converting from ug C/ug dry sediment to fg C/mL permafrost
     # L dry sediment / L permafrost = (1 - L solid porewater / L permafrost)
-    # ug C/ug dry sed * ug dry sediment/mL dry sediment * ml/dry sediment/mL permafrost
+    # ug C/ug dry sed * ug dry sediment/mL dry sediment * mL dry sediment/mL permafrost
     beo_poc *= dry_sediment_density * (1 - beo_volumetric_ice_content) * 10 ** 9
 
     # Converting from mg C/L thawed porewater * L thawed porewater/L permafrost to fg C/ml
-    beo_doc *= beo_volumetric_ice_content * (1 - expansion_factor) * 10 ** 9
+    beo_doc *= beo_volumetric_ice_content * (1 + expansion_factor) * 10 ** 9
 
     # Converting from micromolar C to fg C/mL using carbon molar mass of 12.011
     cb1_18_poc = convert_micromolar_carbon_to_fgC_per_ml(cb1_18_poc)
@@ -138,8 +138,8 @@ def cb4_scenario():
     from the other cryopeg brines, e.g. Psychrobacter is the dominant genus in this brine rather than Marinobacter
     like many others.
     """
-    dry_sediment_density = 2.625 * 10 ** 6  # ug/mL average density density of kaolinite and sand
-    expansion_factor = 0.0905  # Assumed expansion factor of porewater from liquid to solid. (French & Shur 2010)
+    dry_sediment_density = 2.625 * 10 ** 6  # ug/mL average density density of kaolinite and sand (Iwahana et al., 2021)
+    expansion_factor = 0.0905  # % Assumed expansion factor of porewater from liquid to solid. (French & Shur 2010)
     cb4_volumetric_ice_content = 0.527  # L solid porewater/L permafrost from Go Iwahana (unpublished, but see Meyer et al. 2010)
     cb4_poc = 0.0136  # ug C/ug dry sed (our data)
     cb4_doc = 1286.81  # mg C/L thawed porewater (our data)
@@ -153,7 +153,7 @@ def cb4_scenario():
     cb4_poc *= dry_sediment_density * (1 - cb4_volumetric_ice_content) * 10 ** 9
 
     # Converting from mg C/L thawed porewater * L thawed porewater/L permafrost  to fg C/ml
-    cb4_doc *= cb4_volumetric_ice_content * (1 - expansion_factor) * 10 ** 9
+    cb4_doc *= cb4_volumetric_ice_content * (1 + expansion_factor) * 10 ** 9
 
     # Converting from micromolar C to fg C/mL using carbon molar mass of 12.011
     cb4_brine_poc = convert_micromolar_carbon_to_fgC_per_ml(cb4_brine_poc)
@@ -182,8 +182,8 @@ def cbiw_scenario():
     It is likely that more carbon was added than our estimate, however given our current understanding it is impossible
     to quantify precisely how much carbon was added into the brine during its migration.
     """
-    dry_sediment_density = 2.625 * 10 ** 6  # ug/mL average density density of kaolinite and sand
-    expansion_factor_porewater = 0.0905  # Assumed expansion factor of porewater from liquid to solid. (French & Shur 2010)
+    dry_sediment_density = 2.625 * 10 ** 6  # ug/mL average density density of kaolinite and sand (Iwahana et al., 2021)
+    expansion_factor_porewater = 0.0905  # % Assumed expansion factor of porewater from liquid to solid. (French & Shur 2010)
     beo_volumetric_ice_content = 0.731  # L solid porewater/L permafrost from Go Iwahana (unpublished, but see Meyer et al. 2010)
     expansion_factor_ice = 0.08042  # % Expansion factor of pure water (massive ice) from liquid to solid
     beo_poc = 0.0232  # ug C/ug dry sed (our data)
@@ -200,11 +200,11 @@ def cbiw_scenario():
     beo_poc *= dry_sediment_density * (1 - beo_volumetric_ice_content) * 10 ** 9
 
     # Converting from mg C/L thawed porewater * L thawed porewater/L permafrost to fg C/ml
-    beo_doc *= beo_volumetric_ice_content * (1 - expansion_factor_porewater) * 10 ** 9
+    beo_doc *= beo_volumetric_ice_content * (1 + expansion_factor_porewater) * 10 ** 9
 
     # Converting from ug C/mL thawed massive ice to fg C/mL massive ice
-    massive_ice_poc *= massive_ice_poc * (1 - expansion_factor_ice) * 10 ** 9
-    massive_ice_doc *= massive_ice_doc * (1 - expansion_factor_ice) * 10 ** 9
+    massive_ice_poc *= (1 + expansion_factor_ice) * 10 ** 9
+    massive_ice_doc *= (1 + expansion_factor_ice) * 10 ** 9
 
     # Converting from micromolar C to fg C/mL using carbon molar mass of 12.011
     cbiw_brine_poc = convert_micromolar_carbon_to_fgC_per_ml(cbiw_brine_poc)

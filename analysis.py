@@ -152,7 +152,7 @@ def estimate_me_bounds(scenario: Scenario):
 
     number_of_generations = np.log(end_cell / start_cell) / np.log(2)  # generations
     doubling_time = timespan / number_of_generations  # days
-    mu = np.log(end_cell / start_cell) / timespan  # /days
+    mu = np.log(end_cell / start_cell) / timespan  # /day
 
     N0 = start_cell
     N = exp(mu * t + log(N0))
@@ -306,10 +306,10 @@ def calculate_brine_expansion(carbon_density_in_permafrost, carbon_required_per_
     ratio_volume = volume_needed / brine_volume
 
     # Expansion ratio of area
-    ratio_area = (1 + volume_needed / brine_volume) ** Decimal('2') / Decimal('3')
+    ratio_area = (1 + volume_needed / brine_volume) ** Decimal('2') / Decimal('3')  # Rougly
 
     # Expansion ratio linearly
-    ratio_dimensions = (1 + volume_needed / brine_volume) ** Decimal('1') / Decimal('3')
+    ratio_dimensions = (1 + volume_needed / brine_volume) ** Decimal('1') / Decimal('3')  # Rouhgly
 
     expansion_a = a * ratio_dimensions
     expansion_b = b * ratio_dimensions
@@ -322,4 +322,5 @@ def calculate_brine_expansion(carbon_density_in_permafrost, carbon_required_per_
     result.expansion_a = expansion_a
     result.expansion_b = expansion_b
 
+    print("WARNING: Results from this function are approximative area and dimension equation should be checked.")
     return result
