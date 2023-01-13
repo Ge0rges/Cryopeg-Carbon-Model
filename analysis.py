@@ -107,8 +107,8 @@ class Analysis:
         self.model_result = run_model(self.scenario)
 
         # Calculate brine expansion
-        self.expansion_result = calculate_brine_expansion(self.scenario.start_poc+self.scenario.start_doc,
-                                                          (self.model_result.dOC[-1] - self.model_result.dOC[0]) / self.scenario._timespan)
+        # self.expansion_result = calculate_brine_expansion(self.scenario.start_poc+self.scenario.start_doc,
+        #                                                   (self.model_result.dOC[-1] - self.model_result.dOC[0]) / self.scenario._timespan)
 
         # Run the sensitivity analysis or load it from cache
         if cached_SA:
@@ -306,10 +306,10 @@ def calculate_brine_expansion(carbon_density_in_permafrost, carbon_required_per_
     ratio_volume = volume_needed / brine_volume
 
     # Expansion ratio of area
-    ratio_area = (1 + volume_needed / brine_volume) ** Decimal('2') / Decimal('3')  # Rougly
+    ratio_area = (1 + volume_needed / brine_volume) ** Decimal('2') / Decimal('3')  # Roughly
 
     # Expansion ratio linearly
-    ratio_dimensions = (1 + volume_needed / brine_volume) ** Decimal('1') / Decimal('3')  # Rouhgly
+    ratio_dimensions = (1 + volume_needed / brine_volume) ** Decimal('1') / Decimal('3')  # Roughly
 
     expansion_a = a * ratio_dimensions
     expansion_b = b * ratio_dimensions
@@ -322,5 +322,5 @@ def calculate_brine_expansion(carbon_density_in_permafrost, carbon_required_per_
     result.expansion_a = expansion_a
     result.expansion_b = expansion_b
 
-    print("WARNING: Results from this function are approximative area and dimension equation should be checked.")
+    print("WARNING: Results from calculate_brine_expansion may be incorrect.")
     return result
