@@ -3,7 +3,6 @@ venv/
 .ipynb/
 .idea/
 .vscode/launch.json
-Results/*
 *.pyc
 __pycache__/*
 .DS_Store
