@@ -49,9 +49,9 @@ class SensitivityResult:
         S1 = self.first_order_sobol_indices
         st_err = self.total_conf_int
         s1_err = self.first_order_conf_int
-       
+
         df = []
-        for row in range(len(p_names[0:-len(scenario.get_julia_ordered_ivp())])):
+        for row in range(len(p_names[0:-1])):
             if all(ST[i, row] == 0 for i in range(4)):
                 continue
 
