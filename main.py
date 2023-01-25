@@ -123,8 +123,8 @@ if __name__ == "__main__":  # Generates all figures and data points.
     all_analyses = []
 
     # On every scenario, try every analysis configuration. Run a sensitivity analysis only on the first one.
-    do_SA = True  # If true, run SA. If do_SA_from_file is also true, results will be taken from cached file.
-    cached_SA = False  # If true, loads SA results from file and then plots it.
+    do_SA = False  # If true, run SA. If do_SA_from_file is also true, results will be taken from cached file.
+    cached_SA = not do_SA  # If true, loads SA results from file and then plots it.
     for use_minimum_growth_rate in [True, False]:
         for use_me_lower_bound in [True, False]:
             for use_eea_average in [True, False]:
