@@ -107,8 +107,8 @@ class Analysis:
         self.model_result = run_model(self.scenario)
 
         # Calculate brine expansion
-        # self.expansion_result = calculate_brine_expansion(self.scenario.start_poc+self.scenario.start_doc,
-        #                                                   (self.model_result.dOC[-1] - self.model_result.dOC[0]) / self.scenario._timespan)
+        self.expansion_result = calculate_brine_expansion(self.scenario.start_poc+self.scenario.start_doc,
+                                                          (self.model_result.dOC[-1] - self.model_result.dOC[0]) / self.scenario._timespan)
 
         # Run the sensitivity analysis or load it from cache
         if cached_SA:
