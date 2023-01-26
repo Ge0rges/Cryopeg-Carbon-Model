@@ -200,35 +200,25 @@ def plot_sensitivity(analysis: Analysis):
         return None
 
     # Get dataframes
-    df = analysis.sensitivity_analysis_result.get_dataframe(analysis.scenario)
-    err_df = df.melt(id_vars=["Parameter", "Output"], value_vars=["Total Error", "First Error"], var_name="Error")
-    df = df.melt(id_vars=["Parameter", "Output"], value_vars=["Total-effect", "First-order"], var_name="Sobol index", value_name="Value")
+    df = analysis.sensitivity_analysis_result.get_dataframe(analysis.scenario).set_index('Parameter')
 
-    # Plot
-    grid = sns.catplot(data=df, x="Parameter", y="Value", col="Output", col_wrap=2, hue="Sobol index", kind="bar", aspect=1.8, legend_out=False)
+    # We're only plotting mean
+    df_mean = df[df.Output.eq('Mean')]
 
-    # grid.set_titles(col_template="Sensitivity with respect to {col_name}")
+    vals = df_mean[['Total-effect', 'First-order']]
+    yerr = df_mean[['Total Error', 'First Error']]
+    yerr.columns = vals.columns
 
-    # Add error lines and values
-    for ax, var in zip(grid.axes.ravel(), analysis.sensitivity_analysis_result.variables):
-        # Value labels
-        for c in ax.containers:
-            if type(c) == matplotlib.container.BarContainer:
-                ax.bar_label(c, labels=[f'{v.get_height():.2f}' if v.get_height() >= 0.01 else "<0.01" for v in c], label_type='edge')
+    # Use pandas plot function
+    ax = vals.plot(kind='bar', yerr=yerr, figsize=(12, 6), ylabel="Value", width=0.8, rot=0, title='Average sensitivity across outputs')
 
-        # Error bars
-        ticklocs = ax.xaxis.get_majorticklocs()
-        offset = ax.containers[0][0].get_width() / 2
-        ax.errorbar(x=np.append(ticklocs - offset, ticklocs + offset), y=df[df["Output"] == var]["Value"],
-                    yerr=err_df[err_df["Output"] == var]["value"], ecolor='black', linewidth=0, elinewidth=2, capsize=2)
+    # Add bar label
+    for c in ax.containers:
+        if type(c) == matplotlib.container.BarContainer:
+            labels = [f'{h:.2f}' if (h := v.get_height()) >= 0.01 else "<0.01" for v in c]
+            ax.bar_label(c, labels=labels, label_type='center', padding=5)
 
-        # Change title for mean
-        if var == "Mean":
-            ax.set_title("Average sensitivity across outputs")
-
-    grid.tight_layout()
-
-    return grid
+    return ax.get_figure()
 
 
 def hypothetical_growth_scenarios():
