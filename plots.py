@@ -63,7 +63,7 @@ def plot_all_scenarios_all_analyses(analyses: [Analysis], color_cycle: int = Non
                                 value_vars=["POC", "DOC", "IC", "Cells"], var_name="Data type")
 
     # Plot
-    grid = sns.relplot(data=melted_data, x="Years from start", y="value", palette=cp, aspect=0.7,
+    grid = sns.relplot(data=melted_data, x="Years from start", y="value", palette=cp, aspect=1,
                        col="Data type", row="Analysis type", hue="Scenario",  # style="Analysis type", dashes=dashes,
                        kind="line", facet_kws={'sharey': False, 'sharex': False, "margin_titles": True,
                                                "legend_out": False})
@@ -119,7 +119,7 @@ def plot_multiple_scenarios_one_row(analyses: [Analysis], color_cycle: int = Non
                                 value_vars=["POC", "DOC", "IC", "Cells"], var_name="Data type")
 
     # Plot
-    grid = sns.relplot(data=melted_data, x="Years from start", y="value", palette=cp, aspect=0.7,
+    grid = sns.relplot(data=melted_data, x="Years from start", y="value", palette=cp, aspect=1,
                        col="Data type", hue="Scenario", style="Analysis type", dashes=dashes,
                        kind="line", facet_kws={'sharey': False, 'sharex': True, "xlim": [0.01, 10 ** 5]})
 
@@ -165,7 +165,7 @@ def plot_one_result_type_all_analyses(analyses: [Analysis], data_type: str, main
                                 value_vars=[data_type], var_name="Data type")
 
     # Plot
-    grid = sns.relplot(data=melted_data, x="Years from start", y="value", palette=cp, aspect=0.7,
+    grid = sns.relplot(data=melted_data, x="Years from start", y="value", palette=cp, aspect=1,
                        col="Analysis type", hue="Scenario", kind="line", col_wrap=4,
                        facet_kws={'sharey': True, 'sharex': True, "legend_out": False})
 
@@ -241,7 +241,7 @@ def hypothetical_growth_scenarios():
     axis.loglog(x, y_cyclic, label='Carbon addition', color="red")
     axis.loglog(x, y_ng, label='No Growth', color="brown", linestyle='dashed')
 
-    axis.set_ylim([0.1, 10**10])
+    axis.set_ylim([10**3.5, 10**8.5])
     axis.set_xlim([0.01, 10**5])
     axis.set_xlabel('Years from start')
     axis.set_ylabel('cells/mL')
@@ -255,4 +255,4 @@ def hypothetical_growth_scenarios():
 if __name__ == "__main__":
     # Generate and save just the hypothetical growth figure
     fig = hypothetical_growth_scenarios()
-    fig.savefig("Plots/" + "hypothetical_growth.pdf", format="pdf", dpi=500, bbox_inches='tight')
+    fig.savefig("Results/" + "hypothetical_growth.pdf", format="pdf", dpi=500, bbox_inches='tight')
