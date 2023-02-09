@@ -69,9 +69,9 @@ class Analysis:
         if self._use_eea_average:
             self.scenario._eea_rate = None
 
-        self._variable_title = "Min μ - " if use_minimum_growth_rate else "Max μ - "
-        self._variable_title += "Low ME - " if use_me_lower_bound else "High ME - "
-        self._variable_title += "Calculated EEA" if use_eea_average else "Measured EEA"
+        self._variable_title = "Min $\mu_{max}$ - " if use_minimum_growth_rate else "Max $\mu_{max}$ - "
+        self._variable_title += "Low $m$ - " if use_me_lower_bound else "High $m$ - "
+        self._variable_title += "Calculated $\gamma_{cell}$" if use_eea_average else "Measured $\gamma_{cell}$"
 
         self.title = self.scenario.title + " - " + self._variable_title
         return

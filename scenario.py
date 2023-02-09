@@ -54,7 +54,7 @@ class Scenario:
 
     _parameter_names = ["$μ_{max}$", "$m$", "$\\alpha_D$", "$N_{max}$", "$P_{in}$",
                         "$D_{in}$", "$I_{in}$", "$I_{xr}$", "$\\alpha_I$",
-                        "$\\gamma_{cell}$", "$K_d$", "Punctual organic carbon addition",
+                        "$\\gamma_{cell}$", "$K_D$", "Punctual organic carbon addition",
                         "$P_0$", "$D_0$", "$I_0$", "$N_0$", "Timespan"]  # IVP
 
     # Methods

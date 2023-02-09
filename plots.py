@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 import pandas as pd
+import string
 
 matplotlib.use('TkAgg')
 sns.set_theme()
@@ -169,6 +170,7 @@ def plot_one_result_type_all_analyses(analyses: [Analysis], data_type: str, main
                        col="Analysis type", hue="Scenario", kind="line", col_wrap=4,
                        facet_kws={'sharey': True, 'sharex': True, "legend_out": False})
 
+    grid._legend._loc = 3
     grid.set_titles(template="{col_name}")
     grid.set(xscale="log")
 
@@ -182,6 +184,9 @@ def plot_one_result_type_all_analyses(analyses: [Analysis], data_type: str, main
         ax.set_xscale("log")
         ax.set_ylim(y_lim)
         ax.set_xlim([0.01, 10 ** 5])
+
+        # Add panel title
+        ax.text(-0.1, 1.1, string.ascii_uppercase[i], transform=ax.transAxes, size=20, weight='bold')
 
     grid.tight_layout()
     grid.fig.subplots_adjust(wspace=0.4)
@@ -210,7 +215,7 @@ def plot_sensitivity(analysis: Analysis):
     yerr.columns = vals.columns
 
     # Use pandas plot function
-    ax = vals.plot(kind='bar', yerr=yerr, figsize=(12, 6), ylabel="Value", width=0.8, rot=0, title='Average sensitivity across outputs')
+    ax = vals.plot(kind='bar', yerr=yerr, figsize=(10, 6), ylabel="Value", width=0.8, rot=0)#, title='Average sensitivity across outputs')
 
     # Add bar label
     for c in ax.containers:
