@@ -71,6 +71,7 @@ def plot_all_scenarios_all_analyses(analyses: [Analysis], color_cycle: int = Non
 
     grid.set(xscale="log")
     grid.set_titles(template="{col_name} over time", row_template="{row_name}", col_template="{col_name} over time")
+    grid._legend._loc = 4
 
     # Tune relplot labels
     y_labels = ["femtograms C/mL"] * 3 + ["cells/mL"]
@@ -170,7 +171,7 @@ def plot_one_result_type_all_analyses(analyses: [Analysis], data_type: str, main
                        col="Analysis type", hue="Scenario", kind="line", col_wrap=4,
                        facet_kws={'sharey': True, 'sharex': True, "legend_out": False})
 
-    grid._legend._loc = 3
+    grid._legend._loc = 4
     grid.set_titles(template="{col_name}")
     grid.set(xscale="log")
 

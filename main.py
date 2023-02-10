@@ -29,10 +29,6 @@ def log_results(analyses, cached_SA):
     csv_rows = []
 
     for analysis in analyses:
-        # Individual plots & Sensitivity analysis
-        model_fig = plot_one_analysis(analysis)
-        sa_fig = plot_sensitivity(analysis)
-
         # Endpoints and ME values
         values = [analysis.title,
                   # POC
@@ -73,16 +69,20 @@ def log_results(analyses, cached_SA):
                   # Brine expansion
                   np.format_float_scientific(analysis.expansion_result.ratio_dimensions, precision=2)]
 
+        csv_rows.append(values)
+
         # Save plots and write values to CSV
         # Make a plots folder is it doesn't exist
         if not os.path.exists("Results/"):
             os.mkdir('Results/')
 
-        model_fig.savefig("Results/" + analysis.title + "_model.pdf", format="pdf", dpi=500)
-        csv_rows.append(values)
+        # Individual plots & Sensitivity analysis
+        # model_fig = plot_one_analysis(analysis)
+        # model_fig.savefig("Results/" + analysis.title.replace("$", "") + "_model.pdf", format="pdf", dpi=500)
 
-        if sa_fig:
-            sa_fig.savefig("Results/" + analysis.title + "_sa.pdf", format="pdf", dpi=500)
+        if analysis.sensitivity_analysis_result:
+            sa_fig = plot_sensitivity(analysis)
+            sa_fig.savefig("Results/" + analysis.title.replace("$", "") + "_sa.pdf", format="pdf", dpi=500)
 
             # Save SA values if not from cache
             if not cached_SA:
