@@ -240,7 +240,7 @@ def hypothetical_growth_scenarios():
     y_exp = 10**5 * np.exp(x_exp)
     y_cyclic = 10**5 + (10**8 - 10**5)/2 + np.sin(x/4244.1333333333 + 1.5*np.pi) * (10**8 - 10**5)/2
     y_ng = np.full(shape=len(x), fill_value=10**8)
-    y_spike = np.where(x < 0.02, 10**5, np.where(x < 10, x*10**7 + 10*5, 10**8))
+    y_spike = np.where(x < 0.02, 10**5, np.where(x < 10, 10**5 + (10**8 - 10**5)/2 + np.sin(x/3.1 + 1.5*np.pi) * (10**8 - 10**5)/2, 10**8))
 
     axis.loglog(x, y_spike, label='Rapid', color="blue")
     axis.loglog(x, y_exp, label='Slow', color="green")
