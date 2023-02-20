@@ -24,7 +24,7 @@ class Scenario:
     observed_end_cell_density = None  # cells/mL - The measured cell density in the corresponding brine today.
 
     lab_growth_rate = None  # 1/day - Growth rate determined under nutrient replete in-situ conditions in the lab.
-    maintenance_per_cell = None  # fg C/day cell - Constant maintenance energy coefficient.
+    maintenance_per_cell = None  # fg C/(cell x day) - Constant maintenance energy coefficient.
     dissolved_organic_carbon_per_cell = None  # fg dOC/cell -  Amount of dissolved organic carbon per cell.
 
     title = None  # String - Scenario name. Used in plots later.

@@ -242,10 +242,10 @@ def hypothetical_growth_scenarios():
     y_ng = np.full(shape=len(x), fill_value=10**8)
     y_spike = np.where(x < 0.02, 10**5, np.where(x < 10, 10**5 + (10**8 - 10**5)/2 + np.sin(x/3.1 + 1.5*np.pi) * (10**8 - 10**5)/2, 10**8))
 
-    axis.loglog(x, y_spike, label='Rapid', color="blue")
-    axis.loglog(x, y_exp, label='Slow', color="green")
-    axis.loglog(x, y_cyclic, label='Carbon addition', color="red")
     axis.loglog(x, y_ng, label='No Growth', color="brown", linestyle='dashed')
+    axis.loglog(x, y_exp, label='Slow', color="green")
+    axis.loglog(x, y_spike, label='Rapid', color="blue")
+    axis.loglog(x, y_cyclic, label='Carbon addition', color="red")
 
     axis.set_ylim([10**3.5, 10**8.5])
     axis.set_xlim([0.01, 10**5])
