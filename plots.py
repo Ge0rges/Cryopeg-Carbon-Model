@@ -247,10 +247,13 @@ def hypothetical_growth_scenarios():
     axis.loglog(x, y_spike, label='Rapid', color="blue")
     axis.loglog(x, y_cyclic, label='Carbon addition', color="red")
 
+    plt.tick_params(left=False, right=False, labelleft=False,
+                    labelbottom=False, bottom=False)
+
     axis.set_ylim([10**3.5, 10**8.5])
     axis.set_xlim([0.01, 10**5])
-    axis.set_xlabel('Years from start')
-    axis.set_ylabel('cells/mL')
+    axis.set_xlabel('Time')
+    axis.set_ylabel('Cell density')
     axis.legend(loc=4)
 
     fig.tight_layout()
