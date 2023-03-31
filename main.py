@@ -95,21 +95,9 @@ def log_results(analyses, cached_SA):
         write.writerow(csv_header)
         write.writerows(csv_rows)
 
-    # # Plot for selected analyses
-    # selected_analyses = []
-    # for analysis in analyses:
-    #     if any(map(analysis.title.__contains__, ["Min μ - High ME - Measured EEA", "Max μ - Low ME - Measured EEA"])):
-    #         selected_analyses.append(analysis)
-    #
-    # sc_index = int(len(selected_analyses) / len(scenarios))
-    # individual_scenarios = [plot_multiple_scenarios_one_row(selected_analyses[(i-1)*sc_index:sc_index*i], color_cycle=i-1) for i in range(1, len(scenarios)+1)]
-
     # Plot for all scenarios all analyses
     all_analyses_fig = plot_all_scenarios_all_analyses(analyses)
     single_datatype_plot_cells = plot_one_result_type_all_analyses(analyses, "Cells", 0)
-
-    # for i, fig in enumerate(individual_scenarios):
-    #     fig.savefig("Results/pair"+str(i)+"_scenarios_model.pdf", format="pdf", dpi=500)
 
     all_analyses_fig.savefig("Results/all_model_outputs.pdf", format="pdf", dpi=500)
     single_datatype_plot_cells.savefig("Results/all_model_outputs_just_cells.pdf", format="pdf", dpi=500)
