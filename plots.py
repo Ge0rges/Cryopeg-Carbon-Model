@@ -234,18 +234,19 @@ def hypothetical_growth_scenarios():
 
     fig, axis = plt.subplots(1, 1)
 
+
     x = np.linspace(0, 40000, num=4000000)
-
     x_exp = np.linspace(0, 6.90776, num=len(x))
-    y_exp = 10**5 * np.exp(x_exp)
-    y_cyclic = 10**5 + (10**8 - 10**5)/2 + np.sin(x/4244.1333333333 + 1.5*np.pi) * (10**8 - 10**5)/2
-    y_ng = np.full(shape=len(x), fill_value=10**8)
-    y_spike = np.where(x < 0.02, 10**5, np.where(x < 10, 10**5 + (10**8 - 10**5)/2 + np.sin(x/3.1 + 1.5*np.pi) * (10**8 - 10**5)/2, 10**8))
 
-    axis.loglog(x, y_ng, label='No Growth', color="brown", linestyle='dashed')
-    axis.loglog(x, y_exp, label='Slow', color="green")
-    axis.loglog(x, y_spike, label='Rapid', color="blue")
-    axis.loglog(x, y_cyclic, label='Carbon addition', color="red")
+    y_ng = np.full(shape=len(x), fill_value=10**8)
+    y_slow = 10**5 * np.exp(x_exp)
+    y_rapid = 10**5 + 10**8 / (1 + np.exp(-(x-10)))
+    y_cyclic = 10**5 + (10**8 - 10**5)/2 + np.sin(x/4244.1333333333 + 1.5*np.pi) * (10**8 - 10**5)/2
+
+    axis.loglog(x, y_ng, label='No growth', color="brown", linestyle='dashed')
+    axis.loglog(x, y_slow, label='Slow growth', color="green")
+    axis.loglog(x, y_rapid, label='Rapid growth, no decline', color="blue")
+    axis.loglog(x, y_cyclic, label='Growth, decline, OC added', color="red")
 
     plt.tick_params(left=False, right=False, labelleft=False,
                     labelbottom=False, bottom=False)
