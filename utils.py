@@ -36,7 +36,7 @@ class SensitivityResult:
     first_order_sobol_indices: [float] = None
     total_conf_int: [[float]] = None
     first_order_conf_int: [[float]] = None
-    variables: [str] = ["POC", "DOC", "IC", "Cells", "Mean"]
+    variables: [str] = ["POC", "DOC", "DIC", "Cells", "Mean"]
 
     def get_dataframe(self, scenario):
         """
@@ -74,7 +74,7 @@ class ModelResult:
     """
     pOC: [float] = None
     dOC: [float] = None
-    IC: [float] = None
+    DIC: [float] = None
     cells: [float] = None
     t: [float] = None
 
@@ -82,13 +82,13 @@ class ModelResult:
         """
         Returns model results as a dataframe. Removes duplicate values (e.g. discontinuities).
         """
-        data = [self.t/365.25, self.pOC, self.dOC, self.IC, self.cells, [scenario]*len(self.t), [variable_title]*len(self.t)]
+        data = [self.t/365.25, self.pOC, self.dOC, self.DIC, self.cells, [scenario]*len(self.t), [variable_title]*len(self.t)]
         df = pandas.DataFrame(data=np.column_stack(data),
-                                columns=["Years from start", "POC", "DOC", "IC", "Cells", "Scenario", "Analysis type"])
+                                columns=["Years from start", "POC", "DOC", "DIC", "Cells", "Scenario", "Analysis type"])
 
         df.drop_duplicates(subset=["Years from start", "Scenario", "Analysis type"], keep="last", inplace=True)
 
-        return df.astype({"Years from start": float, "POC": float, "DOC": float, "IC": float, "Cells": float,
+        return df.astype({"Years from start": float, "POC": float, "DOC": float, "DIC": float, "Cells": float,
                            "Scenario": str, "Analysis type": str})
 
 

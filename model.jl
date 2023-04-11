@@ -17,7 +17,7 @@ function run_model(p, u0)
     prob = ODEProblem(model, u0[1:end-1], (0.0, last(u0)), p)
     sol = solve(prob, Rosenbrock23(), callback=cbs, maxiters=1e6)
 
-    # Return the solution array - [pOC, dOC, IC, Cells, t]
+    # Return the solution array - [pOC, dOC, DIC, Cells, t]
     return [[x[1] for x in sol.u], [x[2] for x in sol.u], [x[3] for x in sol.u], [x[4] for x in sol.u], sol.t]
 end
 
@@ -88,7 +88,7 @@ function make_callbacks(;sensitivity_analysis=false, p=nothing)
     eea_min_condition(u, t, integrator) = integrator.p[10] * u[4] - u[1]
     eea_min_cb = ContinuousCallback(eea_min_condition, do_nothing)
 
-    # Min condition for IC fixation rate
+    # Min condition for DIC fixation rate
     ic_min_condition(u, t, integrator) = integrator.p[8] - u[3]
     ic_min_cb = ContinuousCallback(ic_min_condition, do_nothing)
 

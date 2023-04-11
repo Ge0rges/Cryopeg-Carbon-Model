@@ -242,7 +242,7 @@ def run_model(scenario: Scenario):
     result = ModelResult()
     result.pOC = P
     result.dOC = D
-    result.IC = I
+    result.DIC = I
     result.cells = N
     result.t = t
 

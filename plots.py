@@ -22,7 +22,7 @@ def plot_one_analysis(analysis: Analysis):
     """
     # Make seaborn data frame
     data = analysis.model_result.get_dataframe(analysis.scenario.title, analysis._variable_title)
-    melted = pd.melt(data, id_vars="Years from start", value_vars=("POC", "DOC", "IC", "Cells"), var_name="Variable",
+    melted = pd.melt(data, id_vars="Years from start", value_vars=("POC", "DOC", "DIC", "Cells"), var_name="Variable",
                      value_name="femtograms C/mL or cells/mL")
 
     # Make figure
@@ -61,7 +61,7 @@ def plot_all_scenarios_all_analyses(analyses: [Analysis], color_cycle: int = Non
         all_data = pd.concat([all_data, data]).reset_index(drop=True)
 
     melted_data = all_data.melt(id_vars=["Years from start", "Scenario", "Analysis type"],
-                                value_vars=["POC", "DOC", "IC", "Cells"], var_name="Data type")
+                                value_vars=["POC", "DOC", "DIC", "Cells"], var_name="Data type")
 
     # Plot
     grid = sns.relplot(data=melted_data, x="Years from start", y="value", palette=cp, aspect=1,
@@ -91,8 +91,12 @@ def plot_all_scenarios_all_analyses(analyses: [Analysis], color_cycle: int = Non
         ax.set_ylim(lim)
         ax.set_xlim([0.01, 10 ** 5])
 
+        # Add panel title to row
+        if i % 4 == 0:
+            ax.text(-0.1, 1.1, string.ascii_uppercase[i//4], tr ansform=ax.transAxes, size=20, weight='bold')
+
     grid.tight_layout()
-    grid.fig.subplots_adjust(hspace=0.2, wspace=0.4)
+    grid.fig.subplots_adjust(hspace=0.3, wspace=0.4)
 
     return grid
 
@@ -118,7 +122,7 @@ def plot_multiple_scenarios_one_row(analyses: [Analysis], color_cycle: int = Non
         all_data = pd.concat([all_data, data]).reset_index(drop=True)
 
     melted_data = all_data.melt(id_vars=["Years from start", "Scenario", "Analysis type"],
-                                value_vars=["POC", "DOC", "IC", "Cells"], var_name="Data type")
+                                value_vars=["POC", "DOC", "DIC", "Cells"], var_name="Data type")
 
     # Plot
     grid = sns.relplot(data=melted_data, x="Years from start", y="value", palette=cp, aspect=1,
@@ -190,7 +194,7 @@ def plot_one_result_type_all_analyses(analyses: [Analysis], data_type: str, main
         ax.text(-0.1, 1.1, string.ascii_uppercase[i], transform=ax.transAxes, size=20, weight='bold')
 
     grid.tight_layout()
-    grid.fig.subplots_adjust(wspace=0.4)
+    grid.fig.subplots_adjust(wspace=0.2)
 
     return grid
 
@@ -243,7 +247,7 @@ def hypothetical_growth_scenarios():
     y_rapid = 10**5 + 10**8 / (1 + np.exp(-(x-10)))
     y_cyclic = 10**5 + (10**8 - 10**5)/2 + np.sin(x/4244.1333333333 + 1.5*np.pi) * (10**8 - 10**5)/2
 
-    axis.loglog(x, y_ng, label='No growth', color="brown", linestyle='dashed')
+    axis.loglog(x, y_ng, label='No growth', color="purple", linestyle='dashed')
     axis.loglog(x, y_slow, label='Slow growth', color="green")
     axis.loglog(x, y_rapid, label='Rapid growth, no decline', color="blue")
     axis.loglog(x, y_cyclic, label='Growth, decline, OC added', color="red")
