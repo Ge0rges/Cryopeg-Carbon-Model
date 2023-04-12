@@ -2,4 +2,4 @@ julia==0.5.7
 numpy==1.23.3
 sympy==1.11.1
 seaborn==0.12.1
-pandas
+pandas==1.5.2

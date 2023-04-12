@@ -93,7 +93,7 @@ def plot_all_scenarios_all_analyses(analyses: [Analysis], color_cycle: int = Non
 
         # Add panel title to row
         if i % 4 == 0:
-            ax.text(-0.1, 1.1, string.ascii_uppercase[i//4], tr ansform=ax.transAxes, size=20, weight='bold')
+            ax.text(-0.1, 1.1, string.ascii_uppercase[i//4], transform=ax.transAxes, size=20, weight='bold')
 
     grid.tight_layout()
     grid.fig.subplots_adjust(hspace=0.3, wspace=0.4)
@@ -269,4 +269,4 @@ def hypothetical_growth_scenarios():
 if __name__ == "__main__":
     # Generate and save just the hypothetical growth figure
     fig = hypothetical_growth_scenarios()
-    fig.savefig("Results/" + "hypothetical_growth.pdf", format="pdf", dpi=500, bbox_inches='tight')
+    fig.savefig("Results/" + "hypothetical_growth.tif", format="tif", dpi=300, bbox_inches='tight')

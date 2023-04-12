@@ -76,13 +76,9 @@ def log_results(analyses, cached_SA):
         if not os.path.exists("Results/"):
             os.mkdir('Results/')
 
-        # Individual plots & Sensitivity analysis
-        # model_fig = plot_one_analysis(analysis)
-        # model_fig.savefig("Results/" + analysis.title.replace("$", "") + "_model.pdf", format="pdf", dpi=500)
-
         if analysis.sensitivity_analysis_result:
             sa_fig = plot_sensitivity(analysis)
-            sa_fig.savefig("Results/" + analysis.title.replace("$", "") + "_sa.pdf", format="pdf", dpi=500)
+            sa_fig.savefig("Results/" + analysis.title.replace("$", "") + "_sa.tif", format="tif", dpi=300)
 
             # Save SA values if not from cache
             if not cached_SA:
@@ -99,8 +95,8 @@ def log_results(analyses, cached_SA):
     all_analyses_fig = plot_all_scenarios_all_analyses(analyses)
     single_datatype_plot_cells = plot_one_result_type_all_analyses(analyses, "Cells", 0)
 
-    all_analyses_fig.savefig("Results/all_model_outputs.pdf", format="pdf", dpi=500)
-    single_datatype_plot_cells.savefig("Results/all_model_outputs_just_cells.pdf", format="pdf", dpi=500)
+    all_analyses_fig.savefig("Results/all_model_outputs.tif", format="tif", dpi=300)
+    single_datatype_plot_cells.savefig("Results/all_model_outputs_just_cells.tif", format="tif", dpi=300)
 
     return
 
@@ -131,4 +127,4 @@ if __name__ == "__main__":  # Generates all figures and data points.
 
     # Generate the hypothetical growth scenarios figure.
     hg_fig = hypothetical_growth_scenarios()
-    hg_fig.savefig("Results/" + "hypothetical_growth.pdf", format="pdf", dpi=500)
+    hg_fig.savefig("Results/" + "hypothetical_growth.tif", format="tif", dpi=300)
