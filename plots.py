@@ -13,6 +13,8 @@ import string
 
 matplotlib.use('TkAgg')
 sns.set_theme()
+sns.set_context("paper")
+sns.set(font_scale=1.2)
 
 
 def plot_one_analysis(analysis: Analysis):
@@ -23,10 +25,10 @@ def plot_one_analysis(analysis: Analysis):
     # Make seaborn data frame
     data = analysis.model_result.get_dataframe(analysis.scenario.title, analysis._variable_title)
     melted = pd.melt(data, id_vars="Years from start", value_vars=("POC", "DOC", "DIC", "Cells"), var_name="Variable",
-                     value_name="femtograms C/mL or cells/mL")
+                     value_name="Femtograms C/mL or Cells/mL")
 
     # Make figure
-    grid = sns.relplot(data=melted, x="Years from start", y="femtograms C/mL or cells/mL", hue="Variable",
+    grid = sns.relplot(data=melted, x="Years from start", y="Femtograms C/mL or Cells/mL", hue="Variable",
                        palette=["brown", "blue", "black", "green"], kind="line")
 
     grid.set(xscale="log", yscale="log")
@@ -74,7 +76,7 @@ def plot_all_scenarios_all_analyses(analyses: [Analysis], color_cycle: int = Non
     grid._legend._loc = 4
 
     # Tune relplot labels
-    y_labels = ["femtograms C/mL"] * 3 + ["cells/mL"]
+    y_labels = ["Femtograms C/mL"] * 3 + ["Cells/mL"]
     y_lim = [[1, 10 ** 14]] * 3 + [[1, 10 ** 10]]
     for i, ax in enumerate(grid.axes.ravel()):
         if i < 4:
@@ -133,7 +135,7 @@ def plot_multiple_scenarios_one_row(analyses: [Analysis], color_cycle: int = Non
     grid.set_titles(template="{col_name} over time")
 
     # Tune relplot labels
-    y_labels = ["femtograms C/mL"] * 3 + ["cells/mL"]
+    y_labels = ["Femtograms C/mL"] * 3 + ["Cells/mL"]
     y_lim = [[1, 10 ** 14]] * 3 + [[1, 10 ** 10]]
     for i, ax in enumerate(grid.axes.ravel()):
         label = y_labels[i % len(y_labels)]
@@ -180,7 +182,7 @@ def plot_one_result_type_all_analyses(analyses: [Analysis], data_type: str, main
     grid.set(xscale="log")
 
     # Tune relplot labels
-    y_label = "cells/mL" if data_type == "Cells" else "femtograms C/mL"
+    y_label = "Cells/mL" if data_type == "Cells" else "Femtograms C/mL"
     y_lim = [1, 10 ** 10] if data_type == "Cells" else [1, 10 ** 14]
     for i, ax in enumerate(grid.axes.ravel()):
         ax.set_ylabel(y_label)
@@ -219,14 +221,21 @@ def plot_sensitivity(analysis: Analysis):
     yerr = df_mean[['Total Error', 'First Error']]
     yerr.columns = vals.columns
 
+    vals = vals.apply(lambda x: np.where(x < 0.01, 0, x))
+
     # Use pandas plot function
-    ax = vals.plot(kind='bar', yerr=yerr, figsize=(10, 6), ylabel="Value", width=0.8, rot=0)#, title='Average sensitivity across outputs')
+    ax = vals.plot(kind='bar', yerr=yerr, figsize=(10, 6), ylabel="Value", width=0.8, rot=0)
 
     # Add bar label
+    label_colors = ["white", "white", "white", "white", "white", "white", "black",
+                    "white", "white", "black", "black", "black", "white", "black"]
     for c in ax.containers:
         if type(c) == matplotlib.container.BarContainer:
             labels = [f'{h:.2f}' if (h := v.get_height()) >= 0.01 else "<0.01" for v in c]
-            ax.bar_label(c, labels=labels, label_type='center', padding=5)
+            ax.bar_label(c, labels=labels, label_type='center', padding=5, fontsize=12)
+
+    for i, text in enumerate(ax.texts):
+        text.set_color(label_colors[i])
 
     return ax.get_figure()
 
