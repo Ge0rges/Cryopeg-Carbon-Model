@@ -2,7 +2,7 @@
 A model of the carbon cycle and bacterial growth in cryopeg brines. Aimed at constraining the energetic kinetics of microbial populations in subzero hypersaline brines.
 
 ## Reference
-Kanaan et al. _In review._
+[Kanaan, Georges, Tori M. Hoehler, Go Iwahana, and Jody W. Deming. "Modeled energetics of bacterial communities in ancient subzero brines." Frontiers in Microbiology 14 (2023): 1206641.](https://www.frontiersin.org/articles/10.3389/fmicb.2023.1206641/full)
 
 ## Installation
 1. Install [Julia](https://julialang.org/downloads/) version 1.8.0.
