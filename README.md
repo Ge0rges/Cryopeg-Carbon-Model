@@ -6,7 +6,7 @@ A model of the carbon cycle and bacterial growth in cryopeg brines. Aimed at con
 
 ## Installation
 1. Install [Julia](https://julialang.org/downloads/) version 1.8.0.
-2. Install [Python](https://www.python.org/downloads/), guarranteed to compile on Python 3.9.
+2. Install [Python](https://www.python.org/downloads/), guarranteed to be interpreted on Python 3.9.
 3. Create a Python virtual environment [How-to](https://docs.python.org/3/library/venv.html).
 4. Install the requirements in your venv `pip install -r requirements.txt`.
 5. Setup PyJulia by executing the following in a python REPL `import julia; julia.install()`.
