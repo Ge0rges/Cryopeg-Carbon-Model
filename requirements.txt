@@ -3,3 +3,4 @@ numpy==1.23.3
 sympy==1.11.1
 seaborn==0.12.1
 pandas==1.5.2
+matplotlib==3.8.2
